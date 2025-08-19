@@ -3,6 +3,7 @@ package edu.stanford.protege.github.cloneservice.utils;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.parameters.Imports;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,8 @@ public class DifferenceCalculator {
 
         var axiomChanges = new HashSet<AxiomChange>();
 
-        var currentAxioms = new HashSet<>(currentOntology.getAxioms());
-        var previousAxioms = new HashSet<>(previousOntology.getAxioms());
+        var currentAxioms = new HashSet<>(currentOntology.getAxioms(Imports.INCLUDED));
+        var previousAxioms = new HashSet<>(previousOntology.getAxioms(Imports.INCLUDED));
 
         // Find added axioms (present in current but not in previous)
         var addedAxioms = findAddedAxioms(currentAxioms, previousAxioms);
