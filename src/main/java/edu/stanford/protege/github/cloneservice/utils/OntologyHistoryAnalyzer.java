@@ -1,8 +1,8 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.model.CommitMetadata;
-import edu.stanford.protege.commitnavigator.services.CommitNavigator;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -33,7 +33,7 @@ public class OntologyHistoryAnalyzer {
      * Analyzes ontology history across all consecutive commits from HEAD backwards
      *
      * @param ontologyFilePath The name of the ontology file to analyze
-     * @param commitNavigator The commit navigator to traverse commit history
+     * @param gitHubRepository The GitHub repository where all commits are stored
      * @return List of all ontology changes across commit history
      *
      * @throws OntologyComparisonException if analysis fails
@@ -41,16 +41,17 @@ public class OntologyHistoryAnalyzer {
     @Nonnull
     public ImmutableList<OntologyCommitChange> getCommitHistory(
             @Nonnull String ontologyFilePath,
-            @Nonnull CommitNavigator commitNavigator) throws OntologyComparisonException {
+            @Nonnull GitHubRepository gitHubRepository) throws OntologyComparisonException {
 
         Objects.requireNonNull(ontologyFilePath, "ontologyFilePath cannot be null");
-        Objects.requireNonNull(commitNavigator, "commitNavigator cannot be null");
+        Objects.requireNonNull(gitHubRepository, "gitHubRepository cannot be null");
 
         logger.info("Starting ontology commit history analysis for ontology file: {}", ontologyFilePath);
 
         var emptyOntology = ontologyLoader.createEmptyOntology();
         var allCommitChanges = new ArrayList<OntologyCommitChange>();
         try {
+            var commitNavigator = gitHubRepository.getCommitNavigator();
             var ontologyFile = commitNavigator.resolveFilePath(ontologyFilePath);
             while (true) {
                 var commitMetadata = commitNavigator.getCurrentCommit();
