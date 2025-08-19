@@ -15,9 +15,9 @@ import java.util.Set;
 /**
  * Calculates differences between ontology versions
  */
-public class DifferenceCalculator {
+public class OntologyDifferenceCalculator {
 
-    private static final Logger logger = LoggerFactory.getLogger(DifferenceCalculator.class);
+    private static final Logger logger = LoggerFactory.getLogger(OntologyDifferenceCalculator.class);
 
     /**
      * Calculates differences between current and previous ontology versions

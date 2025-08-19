@@ -21,12 +21,12 @@ public class OntologyHistoryAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(OntologyHistoryAnalyzer.class);
 
     private final OntologyLoader ontologyLoader;
-    private final DifferenceCalculator differenceCalculator;
+    private final OntologyDifferenceCalculator differenceCalculator;
 
     public OntologyHistoryAnalyzer(OntologyLoader ontologyLoader,
-                                   DifferenceCalculator differenceCalculator) {
+                                   OntologyDifferenceCalculator differenceCalculator) {
         this.ontologyLoader = Objects.requireNonNull(ontologyLoader, "OntologyLoader cannot be null");
-        this.differenceCalculator = Objects.requireNonNull( differenceCalculator, "DifferenceCalculator cannot be null" );
+        this.differenceCalculator = Objects.requireNonNull( differenceCalculator, "OntologyDifferenceCalculator cannot be null" );
     }
 
     /**
