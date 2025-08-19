@@ -1,9 +1,11 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import edu.stanford.protege.commitnavigator.model.CommitMetadata;
 import edu.stanford.protege.commitnavigator.services.CommitNavigator;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,25 +48,36 @@ public class OntologyHistoryAnalyzer {
 
         logger.info("Starting ontology commit history analysis for ontology file: {}", ontologyFilePath);
 
-        var cachedOntology = ontologyLoader.createEmptyOntology();
+        var emptyOntology = ontologyLoader.createEmptyOntology();
         var allCommitChanges = new ArrayList<OntologyCommitChange>();
         try {
             var ontologyFile = commitNavigator.resolveFilePath(ontologyFilePath);
-            while (commitNavigator.hasPrevious()) {
+            while (true) {
                 var commitMetadata = commitNavigator.getCurrentCommit();
-                var currentOntology = ontologyLoader.loadOntology(ontologyFile).orElse(cachedOntology);
-                cachedOntology = currentOntology;
-                commitNavigator.previousAndCheckout();
-                var previousOntology = ontologyLoader.loadOntology(ontologyFile).orElse(cachedOntology);
-                cachedOntology = previousOntology;
-                var axiomChanges = differenceCalculator.calculateAxiomChanges(currentOntology, previousOntology);
-                var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
-                allCommitChanges.add(ontologyCommitChange);
+                var currentOntology = ontologyLoader.loadOntology(ontologyFile).orElse(emptyOntology);
+                if ((commitNavigator.hasPrevious())) {
+                    commitNavigator.previousAndCheckout();
+                    var previousOntology = ontologyLoader.loadOntology(ontologyFile).orElse(emptyOntology);
+                    calculateAxiomChangesBetweenVersions(currentOntology, previousOntology, commitMetadata, allCommitChanges);
+                } else {
+                    // No previous commit, treat the first commit as a diff between the current one and an empty ontology
+                    calculateAxiomChangesBetweenVersions(currentOntology, emptyOntology, commitMetadata, allCommitChanges);
+                    break; // No previous commit, stop analysis
+                }
             }
             return ImmutableList.copyOf(allCommitChanges);
 
         } catch (Exception e) {
             throw new OntologyComparisonException("Failed to analyze ontology commit history", e);
         }
+    }
+
+    private void calculateAxiomChangesBetweenVersions(OWLOntology currentOntology,
+                                                      OWLOntology previousOntology,
+                                                      CommitMetadata commitMetadata,
+                                                      ArrayList<OntologyCommitChange> allCommitChanges) {
+        var axiomChanges = differenceCalculator.calculateAxiomChanges(currentOntology, previousOntology);
+        var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+        allCommitChanges.add(ontologyCommitChange);
     }
 }
