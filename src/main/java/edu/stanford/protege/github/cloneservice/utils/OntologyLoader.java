@@ -4,7 +4,8 @@ import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonExce
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.UnloadableImportException;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
@@ -56,11 +57,23 @@ public class OntologyLoader {
         }
 
         var ontologyManager = OWLManager.createOWLOntologyManager();
+
+        // Configure silent handling of missing/anonymous imports
+        var config = new OWLOntologyLoaderConfiguration()
+                .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+        ontologyManager.setOntologyLoaderConfiguration(config);
+
+        // Add IRI mapper for local imports in the same directory
         ontologyManager.getIRIMappers().add(new AutoIRIMapper(filePath.getParent().toFile(), true));
         try {
             logger.info("Loading ontology from: {}", filePath);
             var ontology = ontologyManager.loadOntologyFromOntologyDocument(ontologyFile);
-            // look at the ontologyManager to get all ontology imports and remove any annonymous imports.
+
+            // Log information about imports
+            var importedOntologies = ontologyManager.getImports(ontology);
+            logger.info("Successfully loaded ontology with {} imports", importedOntologies.size());
+
+            // Get all axioms including imports
             return Optional.of(ontology);
         } catch (UnloadableImportException e) {
             logger.warn("Ontology contains unloadable imports: {}", e.getImportsDeclaration());
