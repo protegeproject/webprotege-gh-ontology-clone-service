@@ -1,8 +1,9 @@
 package edu.stanford.protege.github.cloneservice;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
-import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder;
+import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.exceptions.GitHubNavigatorException;
+import edu.stanford.protege.commitnavigator.model.RepositoryCoordinate;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.utils.OntologyDifferenceCalculator;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
@@ -12,7 +13,10 @@ public class ExampleUsage {
 
     public static void main(String[] args) {
         try {
-            var repository = getGitHubRepository("https://github.com/protegeteam/grocery-ontology");
+            var repositoryCoordinate = RepositoryCoordinate.createFromUrl(
+                    "https://github.com/protegeteam/grocery-ontology",
+                    "master");
+            var repository = getGitHubRepository(repositoryCoordinate);
             var ontologyLoader = new OntologyLoader();
             var ontologyDifferenceCalculator = new OntologyDifferenceCalculator();
             var ontologyHistoryAnalyzer = new OntologyHistoryAnalyzer(ontologyLoader, ontologyDifferenceCalculator);
@@ -32,10 +36,9 @@ public class ExampleUsage {
         }
     }
 
-    private static GitHubRepository getGitHubRepository(String repositoryUrl) throws GitHubNavigatorException {
-        var repository = GitHubRepositoryBuilder
-                .forRepository(repositoryUrl)
-                .branch("master")
+    private static GitHubRepository getGitHubRepository(RepositoryCoordinate repositoryCoordinate) throws GitHubNavigatorException {
+        var repository = GitHubRepositoryBuilderFactory
+                .create(repositoryCoordinate)
                 .fileFilters("*.owl", "*.rdf", "*.ttl")
                 .build();
         repository.initialize();
