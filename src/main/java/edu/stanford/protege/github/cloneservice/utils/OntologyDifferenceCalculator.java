@@ -1,16 +1,17 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.parameters.Imports;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Calculates differences between ontology versions
@@ -28,31 +29,30 @@ public class OntologyDifferenceCalculator {
      * @return OntologyDifference containing all changes for this commit
      */
     @Nonnull
-    public Set<AxiomChange> calculateAxiomChanges(OWLOntology currentOntology, OWLOntology previousOntology) {
+    public List<AxiomChange> calculateAxiomChanges(@Nonnull OWLOntology currentOntology,
+                                                   @Nonnull OWLOntology previousOntology,
+                                                   @Nonnull OWLOntologyID ontologyId) {
 
         Objects.requireNonNull(currentOntology, "currentOntology cannot be null");
         Objects.requireNonNull(previousOntology, "previousOntology cannot be null");
 
-        var axiomChanges = new HashSet<AxiomChange>();
+        var axiomChanges = Lists.<AxiomChange>newArrayList();
 
-        var currentAxioms = new HashSet<>(currentOntology.getAxioms(Imports.INCLUDED));
-        var previousAxioms = new HashSet<>(previousOntology.getAxioms(Imports.INCLUDED));
+        var currentAxioms = Sets.newHashSet(currentOntology.getAxioms());
+        var previousAxioms = Sets.newHashSet(previousOntology.getAxioms());
 
         // Find added axioms (present in current but not in previous)
         var addedAxioms = findAddedAxioms(currentAxioms, previousAxioms);
-        addedAxioms.forEach(axiom ->
-                axiomChanges.add(AxiomChange.addAxiom(axiom))
-        );
+        addedAxioms.forEach(axiom -> axiomChanges.add(AxiomChange.addAxiom(axiom, ontologyId)));
 
         // Find removed axioms (present in previous but not in current)
         var removedAxioms = findRemovedAxioms(currentAxioms, previousAxioms);
-        removedAxioms.forEach(axiom ->/**/
-                axiomChanges.add(AxiomChange.removeAxiom(axiom))
-        );
+        removedAxioms.forEach(axiom -> axiomChanges.add(AxiomChange.removeAxiom(axiom, ontologyId)));
 
-        logger.info("Found {} added axioms and {} removed axioms", addedAxioms.size(), removedAxioms.size());
+        logger.info("Found {} added axioms and {} removed axioms for ontology {}",
+                addedAxioms.size(), removedAxioms.size(), ontologyId);
 
-        return axiomChanges;
+        return ImmutableList.copyOf(axiomChanges);
     }
 
     /**

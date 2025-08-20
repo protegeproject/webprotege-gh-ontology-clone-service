@@ -1,20 +1,19 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
-import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
+import com.google.common.collect.ImmutableList;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
-import org.semanticweb.owlapi.model.UnloadableImportException;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Handles loading of ontology files using OWL-API
@@ -27,33 +26,45 @@ public class OntologyLoader {
      * Creates a new empty OWL ontology
      *
      * @return A new empty OWL ontology
-     * @throws OntologyComparisonException if ontology creation fails
      */
     @Nonnull
-    public OWLOntology createEmptyOntology() throws OntologyComparisonException {
+    public OWLOntology createEmptyOntology() {
         var ontologyManager = OWLManager.createOWLOntologyManager();
         try {
             return ontologyManager.createOntology();
         } catch (OWLOntologyCreationException e) {
-            throw new OntologyComparisonException("Failed to create empty ontology", e);
+            throw new RuntimeException("Failed to create empty ontology", e);
         }
     }
 
     /**
-     * Loads an ontology from the specified file path
+     * Loads an OWL ontology from the specified file path along with all its imported ontologies.
      *
-     * @param filePath The path to the ontology file
-     * @return Optional containing the loaded ontology, empty if file doesn't exist
-     * @throws OntologyComparisonException if loading fails
+     * <p>The returned list contains the main ontology as the first element, followed by all
+     * imported ontologies. If the ontology has no imports, the list will contain only the
+     * main ontology.</p>
+     *
+     * <p><strong>Import Resolution:</strong></p>
+     * <ul>
+     *   <li>Missing or anonymous imports are handled silently (no exceptions thrown)</li>
+     *   <li>Local imports in the same directory as the main ontology are automatically mapped</li>
+     *   <li>All successfully resolved imports are included in the result</li>
+     * </ul>
+     *
+     * @param filePath the path to the ontology file to load.
+     * @return a list containing the main ontology and all its imported ontologies.
+     *         The main ontology is always the first element. Returns an empty list if the
+     *         file does not exist.
+     * @throws NullPointerException if {@code filePath} is {@code null}
      */
     @Nonnull
-    public Optional<OWLOntology> loadOntology(@Nonnull Path filePath) throws OntologyComparisonException {
+    public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath) {
         Objects.requireNonNull(filePath, "filePath cannot be null");
 
         var ontologyFile = filePath.toFile();
         if (!ontologyFile.exists()) {
             logger.warn("Ontology file does not exist: {}", filePath);
-            return Optional.empty();
+            return ImmutableList.of();
         }
 
         var ontologyManager = OWLManager.createOWLOntologyManager();
@@ -73,13 +84,13 @@ public class OntologyLoader {
             var importedOntologies = ontologyManager.getImports(ontology);
             logger.info("Successfully loaded ontology with {} imports", importedOntologies.size());
 
-            // Get all axioms including imports
-            return Optional.of(ontology);
-        } catch (UnloadableImportException e) {
-            logger.warn("Ontology contains unloadable imports: {}", e.getImportsDeclaration());
-            return Optional.empty();
+            // Get all ontologies including imports
+            return ImmutableList.<OWLOntology>builder()
+                    .add(ontology)
+                    .addAll(importedOntologies)
+                    .build();
         } catch (OWLOntologyCreationException e) {
-            throw new OntologyComparisonException("Failed to load ontology from: " + filePath, e);
+            throw new RuntimeException("Failed to load ontology from: " + filePath, e);
         }
     }
 }

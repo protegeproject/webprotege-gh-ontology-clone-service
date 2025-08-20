@@ -1,17 +1,20 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
-import edu.stanford.protege.commitnavigator.model.CommitMetadata;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
+import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Main service for analyzing ontology history across Git commits
@@ -39,7 +42,7 @@ public class OntologyHistoryAnalyzer {
      * @throws OntologyComparisonException if analysis fails
      */
     @Nonnull
-    public ImmutableList<OntologyCommitChange> getCommitHistory(
+    public List<OntologyCommitChange> getCommitHistory(
             @Nonnull String ontologyFilePath,
             @Nonnull GitHubRepository gitHubRepository) throws OntologyComparisonException {
 
@@ -48,22 +51,25 @@ public class OntologyHistoryAnalyzer {
 
         logger.info("Starting ontology commit history analysis for ontology file: {}", ontologyFilePath);
 
-        var emptyOntology = ontologyLoader.createEmptyOntology();
-        var allCommitChanges = new ArrayList<OntologyCommitChange>();
+        var allCommitChanges = Lists.<OntologyCommitChange>newArrayList();
+        
         try {
             var commitNavigator = gitHubRepository.getCommitNavigator();
             var ontologyFile = commitNavigator.resolveFilePath(ontologyFilePath);
+            
             while (true) {
                 var commitMetadata = commitNavigator.getCurrentCommit();
-                var currentOntology = ontologyLoader.loadOntology(ontologyFile).orElse(emptyOntology);
-                if ((commitNavigator.hasPrevious())) {
+                var currentOntologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+
+                if (commitNavigator.hasPrevious()) {
                     commitNavigator.previousAndCheckout();
-                    var previousOntology = ontologyLoader.loadOntology(ontologyFile).orElse(emptyOntology);
-                    calculateAxiomChangesBetweenVersions(currentOntology, previousOntology, commitMetadata, allCommitChanges);
+                    var previousOntologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+                    var axiomChanges = calculateAxiomChangesBetweenCommits(currentOntologies, previousOntologies);
+                    allCommitChanges.add(new OntologyCommitChange(axiomChanges, commitMetadata));
                 } else {
-                    // No previous commit, treat the first commit as a diff between the current one and an empty ontology
-                    calculateAxiomChangesBetweenVersions(currentOntology, emptyOntology, commitMetadata, allCommitChanges);
-                    break; // No previous commit, stop analysis
+                    var axiomChanges = calculateInitialCommitChanges(currentOntologies);
+                    allCommitChanges.add(new OntologyCommitChange(axiomChanges, commitMetadata));
+                    break;
                 }
             }
             return ImmutableList.copyOf(allCommitChanges);
@@ -73,12 +79,111 @@ public class OntologyHistoryAnalyzer {
         }
     }
 
-    private void calculateAxiomChangesBetweenVersions(OWLOntology currentOntology,
-                                                      OWLOntology previousOntology,
-                                                      CommitMetadata commitMetadata,
-                                                      ArrayList<OntologyCommitChange> allCommitChanges) {
-        var axiomChanges = differenceCalculator.calculateAxiomChanges(currentOntology, previousOntology);
-        var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
-        allCommitChanges.add(ontologyCommitChange);
+    /**
+     * Calculates axiom changes between current and previous commit ontologies
+     *
+     * @param currentOntologies  ontologies from current commit
+     * @param previousOntologies ontologies from previous commit
+     * @return list of axiom changes between commits
+     */
+    @Nonnull
+    private List<AxiomChange> calculateAxiomChangesBetweenCommits(
+            @Nonnull List<OWLOntology> currentOntologies,
+            @Nonnull List<OWLOntology> previousOntologies) {
+
+        var allAxiomChanges = Lists.<AxiomChange>newArrayList();
+
+        // Process current ontologies one by one and find their previous versions
+        var results = currentOntologies.stream()
+                .map(current -> processMatchingOntology(current, previousOntologies))
+                .toList();
+
+        var processedOntologyIds = Lists.<OWLOntologyID>newArrayList();
+        for (var result : results) {
+            allAxiomChanges.addAll(result.axiomChanges());
+            processedOntologyIds.add(result.ontologyId());
+        }
+
+        // Process removed ontologies (exist in previous but not in current)
+        var emptyOntology = ontologyLoader.createEmptyOntology();
+        var removedOntologyChanges = previousOntologies.stream()
+                .filter(ontology -> !processedOntologyIds.contains(ontology.getOntologyID()))
+                .flatMap(ontology -> differenceCalculator.calculateAxiomChanges(
+                        emptyOntology, ontology, ontology.getOntologyID()).stream())
+                .toList();
+
+        allAxiomChanges.addAll(removedOntologyChanges);
+        return ImmutableList.copyOf(allAxiomChanges);
+    }
+
+    /**
+     * Calculates axiom changes for the initial commit (compared to empty ontology)
+     *
+     * @param currentOntologies ontologies from the initial commit
+     * @return list of axiom changes for initial commit
+     */
+    @Nonnull
+    private List<AxiomChange> calculateInitialCommitChanges(@Nonnull List<OWLOntology> currentOntologies) {
+
+        var emptyOntology = ontologyLoader.createEmptyOntology();
+        return currentOntologies.stream()
+                .flatMap(ontology -> differenceCalculator.calculateAxiomChanges(
+                        ontology, emptyOntology, ontology.getOntologyID()).stream())
+                .collect(ImmutableList.toImmutableList());
+    }
+
+    /**
+     * Processes a current ontology by finding its matching previous version and calculating changes.
+     * If no match is found, compares it to an empty ontology.
+     *
+     * @param currentOntology    the ontology to process
+     * @param previousOntologies list of previous ontologies to match against
+     * @return processing result containing axiom changes and ontology ID
+     */
+    @Nonnull
+    private OntologyProcessingResult processMatchingOntology(
+            @Nonnull OWLOntology currentOntology,
+            @Nonnull List<OWLOntology> previousOntologies) {
+
+        var emptyOntology = ontologyLoader.createEmptyOntology();
+
+        var ontologyId = currentOntology.getOntologyID();
+        var matchingPrevious = findMatchingOntology(currentOntology, previousOntologies);
+        
+        var axiomChanges = matchingPrevious
+                .map(previous -> differenceCalculator.calculateAxiomChanges(currentOntology, previous, ontologyId))
+                .orElseGet(() -> differenceCalculator.calculateAxiomChanges(currentOntology, emptyOntology, ontologyId));
+
+        return new OntologyProcessingResult(axiomChanges, ontologyId);
+    }
+
+    /**
+     * Finds matching ontology in the previous ontologies list
+     *
+     * @param targetOntology     the ontology to find a match for
+     * @param ontologiesToSearch list of ontologies to search in
+     * @return Optional containing the matching ontology, or empty if not found
+     */
+    @Nonnull
+    private Optional<OWLOntology> findMatchingOntology(
+            @Nonnull OWLOntology targetOntology,
+            @Nonnull List<OWLOntology> ontologiesToSearch) {
+        
+        return ontologiesToSearch.stream()
+                .filter(ontology -> ontology.getOntologyID().equals(targetOntology.getOntologyID()))
+                .findFirst();
+    }
+
+    /**
+     * Internal record for holding ontology processing results
+     */
+    private record OntologyProcessingResult(
+            @Nonnull List<AxiomChange> axiomChanges,
+            @Nonnull OWLOntologyID ontologyId
+    ) {
+        private OntologyProcessingResult {
+            Objects.requireNonNull(axiomChanges, "axiomChanges cannot be null");
+            Objects.requireNonNull(ontologyId, "ontologyId cannot be null");
+        }
     }
 }

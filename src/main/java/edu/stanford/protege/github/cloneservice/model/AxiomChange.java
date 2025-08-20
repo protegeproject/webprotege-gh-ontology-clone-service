@@ -1,6 +1,7 @@
 package edu.stanford.protege.github.cloneservice.model;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -10,20 +11,22 @@ import java.util.Objects;
  */
 public record AxiomChange(
         @Nonnull OperationType operationType,
-        @Nonnull OWLAxiom axiom
+        @Nonnull OWLAxiom axiom,
+        @Nonnull OWLOntologyID ontologyID
 ) {
 
     public AxiomChange {
         Objects.requireNonNull(operationType, "operationType cannot be null");
         Objects.requireNonNull(axiom, "axiom cannot be null");
+        Objects.requireNonNull(ontologyID, "ontologyID cannot be null");
     }
 
-    public static AxiomChange addAxiom(@Nonnull OWLAxiom axiom) {
-        return new AxiomChange(OperationType.ADD, axiom);
+    public static AxiomChange addAxiom(@Nonnull OWLAxiom axiom, @Nonnull OWLOntologyID ontologyID) {
+        return new AxiomChange(OperationType.ADD, axiom, ontologyID);
     }
 
-    public static AxiomChange removeAxiom(@Nonnull OWLAxiom axiom) {
-        return new AxiomChange(OperationType.REMOVE, axiom);
+    public static AxiomChange removeAxiom(@Nonnull OWLAxiom axiom, @Nonnull OWLOntologyID ontologyID) {
+        return new AxiomChange(OperationType.REMOVE, axiom, ontologyID);
     }
 
     /**
