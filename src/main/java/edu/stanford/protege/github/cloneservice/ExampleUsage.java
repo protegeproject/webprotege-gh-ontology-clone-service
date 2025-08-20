@@ -24,7 +24,7 @@ public class ExampleUsage {
                 System.out.println("Message: " + commitMetadata.commitMessage().trim());
                 System.out.println("Axiom changes:");
                 commit.axiomChanges().forEach(
-                        (axiomChange) -> System.out.println("- " + axiomChange.operationType() + " " + axiomChange.axiom()));
+                        (axiomChange) -> System.out.println("- " + axiomChange.ontologyID().getOntologyIRI().orNull() + " < " + axiomChange.operationType() + " " + axiomChange.axiom()));
                 System.out.println();
             });
         } catch (GitHubNavigatorException | OntologyComparisonException e) {
