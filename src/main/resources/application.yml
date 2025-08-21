@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: webprotege-initial-revision-history-service
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    password: guest
+    username: guest
+webprotege:
+  minio:
+    access-key: webprotege
+    end-point: http://localhost:9000
+    secret-key: webprotege
+    project-history-documents-bucket-name: webprotege-project-history-documents
+  rabbitmq:
+    requestqueue: webprotege-project-history-service-queue
+    responsequeue: webprotege-project-history-service-response-queue
+    timeout: 60000
