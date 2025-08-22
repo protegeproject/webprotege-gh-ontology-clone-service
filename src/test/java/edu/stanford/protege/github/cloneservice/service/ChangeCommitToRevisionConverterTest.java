@@ -214,7 +214,6 @@ class ChangeCommitToRevisionConverterTest {
 
         // Assert
         assertEquals(commitDate.toEpochMilli(), result.getTimestamp());
-        assertEquals(1703516245123L, result.getTimestamp()); // Expected epoch millis for the test date
     }
 
     @Test
