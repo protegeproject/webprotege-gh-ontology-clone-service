@@ -30,6 +30,13 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: Install custom library
+      run: |
+        # Clone and build the github-commit-navigator library
+        git clone https://github.com/protegeproject/github-commit-navigator-library.git /tmp/navigator
+        cd /tmp/navigator
+        mvn clean install -DskipTests
+
     - name: Run tests
       run: mvn clean test
 
@@ -61,6 +68,13 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
+
+    - name: Install custom library
+      run: |
+        # Clone and build the github-commit-navigator library
+        git clone https://github.com/protegeproject/github-commit-navigator-library.git /tmp/navigator
+        cd /tmp/navigator
+        mvn clean install -DskipTests
 
     - name: Check code formatting with Spotless
       run: mvn spotless:check
@@ -96,6 +110,13 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
+
+    - name: Install custom library
+      run: |
+        # Clone and build the github-commit-navigator library
+        git clone https://github.com/protegeproject/github-commit-navigator-library.git /tmp/navigator
+        cd /tmp/navigator
+        mvn clean install -DskipTests
 
     - name: Build application
       run: mvn clean package -DskipTests
