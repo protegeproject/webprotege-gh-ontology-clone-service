@@ -37,3 +37,47 @@ This service enables teams to import existing ontology projects from GitHub into
 ### Build Requirements
 - **Maven 3.6 or higher**: For building and dependency management
 - **Docker** (optional): For building container images
+
+## Development Commands
+
+### Building and Testing
+```bash
+# Clean and compile
+mvn clean compile
+
+# Run tests
+mvn test
+
+# Build the application
+mvn clean package
+
+# Skip tests during build
+mvn clean package -DskipTests
+```
+
+### Code Quality and Formatting
+```bash
+# Auto-format code with Google Java Style
+mvn spotless:apply
+
+# Check code formatting
+mvn spotless:check
+
+# Run static analysis with SpotBugs
+mvn spotbugs:check
+```
+
+### Running the Application
+```bash
+# Run with Maven
+mvn spring-boot:run
+```
+
+### Docker Operations
+```bash
+# Build Docker image (automatically done during package phase)
+mvn clean package
+
+# Manual Docker build
+docker build -f Dockerfile --build-arg JAR_FILE=webprotege-gh-ontology-clone-service-1.0.0.jar -t protegeproject/webprotege-gh-ontology-clone-service:1.0.0 .
+```
