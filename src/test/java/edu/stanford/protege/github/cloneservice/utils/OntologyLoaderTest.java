@@ -1,68 +1,64 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.semanticweb.owlapi.model.OWLOntology;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Unit tests for {@link OntologyLoader}
- */
+/** Unit tests for {@link OntologyLoader} */
 @DisplayName("OntologyLoader Tests")
 class OntologyLoaderTest {
 
-    private OntologyLoader ontologyLoader;
+  private OntologyLoader ontologyLoader;
 
-    @TempDir
-    Path tempDir;
+  @TempDir Path tempDir;
 
-    @BeforeEach
-    void setUp() {
-        ontologyLoader = new OntologyLoader();
-    }
+  @BeforeEach
+  void setUp() {
+    ontologyLoader = new OntologyLoader();
+  }
 
-    @Test
-    @DisplayName("Should create empty ontology successfully")
-    void createEmptyOntologySuccessfully() {
-        var ontology = ontologyLoader.createEmptyOntology();
+  @Test
+  @DisplayName("Should create empty ontology successfully")
+  void createEmptyOntologySuccessfully() {
+    var ontology = ontologyLoader.createEmptyOntology();
 
-        assertNotNull(ontology);
-        assertTrue(ontology.getAxioms().isEmpty());
-        assertNotNull(ontology.getOntologyID());
-    }
+    assertNotNull(ontology);
+    assertTrue(ontology.getAxioms().isEmpty());
+    assertNotNull(ontology.getOntologyID());
+  }
 
-    @Test
-    @DisplayName("Should return empty list when file does not exist")
-    void returnEmptyListWhenFileDoesNotExist() {
-        var nonExistentFile = tempDir.resolve("non-existent.owl");
+  @Test
+  @DisplayName("Should return empty list when file does not exist")
+  void returnEmptyListWhenFileDoesNotExist() {
+    var nonExistentFile = tempDir.resolve("non-existent.owl");
 
-        var result = ontologyLoader.loadOntologyWithImports(nonExistentFile);
+    var result = ontologyLoader.loadOntologyWithImports(nonExistentFile);
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+  }
 
-    @Test
-    @DisplayName("Should throw NullPointerException when file path is null")
-    void throwExceptionWhenFilePathNull() {
-        var exception = assertThrows(NullPointerException.class, () ->
-            ontologyLoader.loadOntologyWithImports(null)
-        );
+  @Test
+  @DisplayName("Should throw NullPointerException when file path is null")
+  void throwExceptionWhenFilePathNull() {
+    var exception =
+        assertThrows(
+            NullPointerException.class, () -> ontologyLoader.loadOntologyWithImports(null));
 
-        assertEquals("filePath cannot be null", exception.getMessage());
-    }
+    assertEquals("filePath cannot be null", exception.getMessage());
+  }
 
-    @Test
-    @DisplayName("Should load simple OWL ontology successfully")
-    void loadSimpleOwlOntologySuccessfully() throws IOException {
-        var owlContent = """
+  @Test
+  @DisplayName("Should load simple OWL ontology successfully")
+  void loadSimpleOwlOntologySuccessfully() throws IOException {
+    var owlContent =
+        """
             <?xml version="1.0"?>
             <rdf:RDF xmlns="http://example.org/test#"
                      xml:base="http://example.org/test"
@@ -74,39 +70,40 @@ class OntologyLoaderTest {
             </rdf:RDF>
             """;
 
-        var owlFile = tempDir.resolve("test.owl");
-        Files.writeString(owlFile, owlContent);
+    var owlFile = tempDir.resolve("test.owl");
+    Files.writeString(owlFile, owlContent);
 
-        var result = ontologyLoader.loadOntologyWithImports(owlFile);
+    var result = ontologyLoader.loadOntologyWithImports(owlFile);
 
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        
-        var ontology = result.get(0);
-        assertNotNull(ontology);
-        assertFalse(ontology.getAxioms().isEmpty());
-    }
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(1, result.size());
 
-    @Test
-    @DisplayName("Should handle invalid OWL file gracefully")
-    void handleInvalidOwlFileGracefully() throws IOException {
-        var invalidContent = "This is not a valid OWL file";
-        var invalidFile = tempDir.resolve("invalid.owl");
-        Files.writeString(invalidFile, invalidContent);
+    var ontology = result.get(0);
+    assertNotNull(ontology);
+    assertFalse(ontology.getAxioms().isEmpty());
+  }
 
-        var exception = assertThrows(RuntimeException.class, () ->
-            ontologyLoader.loadOntologyWithImports(invalidFile)
-        );
+  @Test
+  @DisplayName("Should handle invalid OWL file gracefully")
+  void handleInvalidOwlFileGracefully() throws IOException {
+    var invalidContent = "This is not a valid OWL file";
+    var invalidFile = tempDir.resolve("invalid.owl");
+    Files.writeString(invalidFile, invalidContent);
 
-        assertNotNull(exception.getMessage());
-        assertTrue(exception.getMessage().contains("Failed to load ontology from"));
-    }
+    var exception =
+        assertThrows(
+            RuntimeException.class, () -> ontologyLoader.loadOntologyWithImports(invalidFile));
 
-    @Test
-    @DisplayName("Should load ontology with missing imports silently")
-    void loadOntologyWithMissingImportsSilently() throws IOException {
-        var owlContentWithMissingImport = """
+    assertNotNull(exception.getMessage());
+    assertTrue(exception.getMessage().contains("Failed to load ontology from"));
+  }
+
+  @Test
+  @DisplayName("Should load ontology with missing imports silently")
+  void loadOntologyWithMissingImportsSilently() throws IOException {
+    var owlContentWithMissingImport =
+        """
             <?xml version="1.0"?>
             <rdf:RDF xmlns="http://example.org/test#"
                      xml:base="http://example.org/test"
@@ -119,20 +116,21 @@ class OntologyLoaderTest {
             </rdf:RDF>
             """;
 
-        var owlFile = tempDir.resolve("test-with-missing-import.owl");
-        Files.writeString(owlFile, owlContentWithMissingImport);
+    var owlFile = tempDir.resolve("test-with-missing-import.owl");
+    Files.writeString(owlFile, owlContentWithMissingImport);
 
-        var result = ontologyLoader.loadOntologyWithImports(owlFile);
+    var result = ontologyLoader.loadOntologyWithImports(owlFile);
 
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-    }
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(1, result.size());
+  }
 
-    @Test
-    @DisplayName("Should load ontology with local import successfully")
-    void loadOntologyWithLocalImportSuccessfully() throws IOException {
-        var importedOntologyContent = """
+  @Test
+  @DisplayName("Should load ontology with local import successfully")
+  void loadOntologyWithLocalImportSuccessfully() throws IOException {
+    var importedOntologyContent =
+        """
             <?xml version="1.0"?>
             <rdf:RDF xmlns="http://example.org/imported#"
                      xml:base="http://example.org/imported"
@@ -143,7 +141,8 @@ class OntologyLoaderTest {
             </rdf:RDF>
             """;
 
-        var mainOntologyContent = """
+    var mainOntologyContent =
+        """
             <?xml version="1.0"?>
             <rdf:RDF xmlns="http://example.org/main#"
                      xml:base="http://example.org/main"
@@ -156,31 +155,31 @@ class OntologyLoaderTest {
             </rdf:RDF>
             """;
 
-        var importedFile = tempDir.resolve("imported.owl");
-        var mainFile = tempDir.resolve("main.owl");
-        Files.writeString(importedFile, importedOntologyContent);
-        Files.writeString(mainFile, mainOntologyContent);
+    var importedFile = tempDir.resolve("imported.owl");
+    var mainFile = tempDir.resolve("main.owl");
+    Files.writeString(importedFile, importedOntologyContent);
+    Files.writeString(mainFile, mainOntologyContent);
 
-        var result = ontologyLoader.loadOntologyWithImports(mainFile);
+    var result = ontologyLoader.loadOntologyWithImports(mainFile);
 
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(2, result.size());
-        
-        var mainOntology = result.get(0);
-        assertNotNull(mainOntology);
-        assertTrue(mainOntology.getOntologyID().getOntologyIRI().isPresent());
-    }
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(2, result.size());
 
-    @Test
-    @DisplayName("Should create multiple empty ontologies independently")
-    void createMultipleEmptyOntologiesIndependently() {
-        var ontology1 = ontologyLoader.createEmptyOntology();
-        var ontology2 = ontologyLoader.createEmptyOntology();
+    var mainOntology = result.get(0);
+    assertNotNull(mainOntology);
+    assertTrue(mainOntology.getOntologyID().getOntologyIRI().isPresent());
+  }
 
-        assertNotNull(ontology1);
-        assertNotNull(ontology2);
-        assertNotSame(ontology1, ontology2);
-        assertNotEquals(ontology1.getOntologyID(), ontology2.getOntologyID());
-    }
+  @Test
+  @DisplayName("Should create multiple empty ontologies independently")
+  void createMultipleEmptyOntologiesIndependently() {
+    var ontology1 = ontologyLoader.createEmptyOntology();
+    var ontology2 = ontologyLoader.createEmptyOntology();
+
+    assertNotNull(ontology1);
+    assertNotNull(ontology2);
+    assertNotSame(ontology1, ontology2);
+    assertNotEquals(ontology1.getOntologyID(), ontology2.getOntologyID());
+  }
 }

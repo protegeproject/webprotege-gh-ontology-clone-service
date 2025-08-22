@@ -1,10 +1,17 @@
 package edu.stanford.protege.github.cloneservice.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import edu.stanford.protege.github.cloneservice.exception.StorageException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,219 +21,206 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-/**
- * Unit tests for {@link MinioProjectHistoryDocumentStorer}
- */
+/** Unit tests for {@link MinioProjectHistoryDocumentStorer} */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MinioProjectHistoryDocumentStorer Tests")
 class MinioProjectHistoryDocumentStorerTest {
 
-    private MinioProjectHistoryDocumentStorer documentStorer;
+  private MinioProjectHistoryDocumentStorer documentStorer;
 
-    @Mock
-    private MinioClient minioClient;
+  @Mock private MinioClient minioClient;
 
-    @Mock
-    private MinioProperties minioProperties;
+  @Mock private MinioProperties minioProperties;
 
-    @TempDir
-    Path tempDir;
+  @TempDir Path tempDir;
 
-    @BeforeEach
-    void setUp() {
-        documentStorer = new MinioProjectHistoryDocumentStorer(minioClient, minioProperties);
-    }
+  @BeforeEach
+  void setUp() {
+    documentStorer = new MinioProjectHistoryDocumentStorer(minioClient, minioProperties);
+  }
 
-    @Test
-    @DisplayName("Store document successfully when bucket exists")
-    void storeDocumentSuccessfullyWhenBucketExists() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentContent = "test document content";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, documentContent);
+  @Test
+  @DisplayName("Store document successfully when bucket exists")
+  void storeDocumentSuccessfullyWhenBucketExists() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentContent = "test document content";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, documentContent);
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
 
-        // Act
-        var result = documentStorer.storeDocument(documentFile);
+    // Act
+    var result = documentStorer.storeDocument(documentFile);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(bucketName, result.bucket());
-        assertTrue(result.name().startsWith("project-history-"));
-        assertTrue(result.name().endsWith(".bin"));
+    // Assert
+    assertNotNull(result);
+    assertEquals(bucketName, result.bucket());
+    assertTrue(result.name().startsWith("project-history-"));
+    assertTrue(result.name().endsWith(".bin"));
 
-        verify(minioClient).bucketExists(any(BucketExistsArgs.class));
-        verify(minioClient, never()).makeBucket(any(MakeBucketArgs.class));
-        
-        var uploadArgsCaptor = ArgumentCaptor.forClass(UploadObjectArgs.class);
-        verify(minioClient).uploadObject(uploadArgsCaptor.capture());
-        
-        var uploadArgs = uploadArgsCaptor.getValue();
-        assertEquals(bucketName, uploadArgs.bucket());
-        assertEquals(documentFile.toString(), uploadArgs.filename());
-        assertEquals("application/octet-stream", uploadArgs.contentType());
-    }
+    verify(minioClient).bucketExists(any(BucketExistsArgs.class));
+    verify(minioClient, never()).makeBucket(any(MakeBucketArgs.class));
 
-    @Test
-    @DisplayName("Store document successfully when bucket does not exist")
-    void storeDocumentSuccessfullyWhenBucketDoesNotExist() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentContent = "test document content";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, documentContent);
+    var uploadArgsCaptor = ArgumentCaptor.forClass(UploadObjectArgs.class);
+    verify(minioClient).uploadObject(uploadArgsCaptor.capture());
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
+    var uploadArgs = uploadArgsCaptor.getValue();
+    assertEquals(bucketName, uploadArgs.bucket());
+    assertEquals(documentFile.toString(), uploadArgs.filename());
+    assertEquals("application/octet-stream", uploadArgs.contentType());
+  }
 
-        // Act
-        var result = documentStorer.storeDocument(documentFile);
+  @Test
+  @DisplayName("Store document successfully when bucket does not exist")
+  void storeDocumentSuccessfullyWhenBucketDoesNotExist() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentContent = "test document content";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, documentContent);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(bucketName, result.bucket());
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
 
-        verify(minioClient).bucketExists(any(BucketExistsArgs.class));
-        verify(minioClient).makeBucket(any(MakeBucketArgs.class));
-        verify(minioClient).uploadObject(any(UploadObjectArgs.class));
-    }
+    // Act
+    var result = documentStorer.storeDocument(documentFile);
 
-    @Test
-    @DisplayName("Throw StorageException when MinIO client throws exception")
-    void throwStorageExceptionWhenMinioClientThrowsException() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, "test content");
+    // Assert
+    assertNotNull(result);
+    assertEquals(bucketName, result.bucket());
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class)))
-            .thenThrow(new RuntimeException("MinIO error"));
+    verify(minioClient).bucketExists(any(BucketExistsArgs.class));
+    verify(minioClient).makeBucket(any(MakeBucketArgs.class));
+    verify(minioClient).uploadObject(any(UploadObjectArgs.class));
+  }
 
-        // Act & Assert
-        var exception = assertThrows(RuntimeException.class, () ->
-            documentStorer.storeDocument(documentFile)
-        );
+  @Test
+  @DisplayName("Throw StorageException when MinIO client throws exception")
+  void throwStorageExceptionWhenMinioClientThrowsException() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, "test content");
 
-        assertEquals("MinIO error", exception.getMessage());
-    }
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class)))
+        .thenThrow(new RuntimeException("MinIO error"));
 
-    @Test
-    @DisplayName("Throw StorageException when upload fails")
-    void throwStorageExceptionWhenUploadFails() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, "test content");
+    // Act & Assert
+    var exception =
+        assertThrows(RuntimeException.class, () -> documentStorer.storeDocument(documentFile));
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
-        doThrow(new IOException("Upload failed")).when(minioClient).uploadObject(any(UploadObjectArgs.class));
+    assertEquals("MinIO error", exception.getMessage());
+  }
 
-        // Act & Assert
-        var exception = assertThrows(StorageException.class, () ->
-            documentStorer.storeDocument(documentFile)
-        );
+  @Test
+  @DisplayName("Throw StorageException when upload fails")
+  void throwStorageExceptionWhenUploadFails() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, "test content");
 
-        assertEquals("Problem writing revision history document to storage", exception.getMessage());
-        assertInstanceOf(IOException.class, exception.getCause());
-    }
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+    doThrow(new IOException("Upload failed"))
+        .when(minioClient)
+        .uploadObject(any(UploadObjectArgs.class));
 
-    @Test
-    @DisplayName("Generate unique object names for different uploads")
-    void generateUniqueObjectNamesForDifferentUploads() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentFile1 = tempDir.resolve("doc1.bin");
-        var documentFile2 = tempDir.resolve("doc2.bin");
-        Files.writeString(documentFile1, "content 1");
-        Files.writeString(documentFile2, "content 2");
+    // Act & Assert
+    var exception =
+        assertThrows(StorageException.class, () -> documentStorer.storeDocument(documentFile));
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+    assertEquals("Problem writing revision history document to storage", exception.getMessage());
+    assertInstanceOf(IOException.class, exception.getCause());
+  }
 
-        // Act
-        var result1 = documentStorer.storeDocument(documentFile1);
-        var result2 = documentStorer.storeDocument(documentFile2);
+  @Test
+  @DisplayName("Generate unique object names for different uploads")
+  void generateUniqueObjectNamesForDifferentUploads() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentFile1 = tempDir.resolve("doc1.bin");
+    var documentFile2 = tempDir.resolve("doc2.bin");
+    Files.writeString(documentFile1, "content 1");
+    Files.writeString(documentFile2, "content 2");
 
-        // Assert
-        assertNotEquals(result1.name(), result2.name());
-        assertTrue(result1.name().startsWith("project-history-"));
-        assertTrue(result2.name().startsWith("project-history-"));
-        assertTrue(result1.name().endsWith(".bin"));
-        assertTrue(result2.name().endsWith(".bin"));
-    }
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
 
-    @Test
-    @DisplayName("Use correct bucket name from properties")
-    void useCorrectBucketNameFromProperties() throws Exception {
-        // Arrange
-        var bucketName = "webprotege-project-history-documents";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, "test content");
+    // Act
+    var result1 = documentStorer.storeDocument(documentFile1);
+    var result2 = documentStorer.storeDocument(documentFile2);
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+    // Assert
+    assertNotEquals(result1.name(), result2.name());
+    assertTrue(result1.name().startsWith("project-history-"));
+    assertTrue(result2.name().startsWith("project-history-"));
+    assertTrue(result1.name().endsWith(".bin"));
+    assertTrue(result2.name().endsWith(".bin"));
+  }
 
-        // Act
-        var result = documentStorer.storeDocument(documentFile);
+  @Test
+  @DisplayName("Use correct bucket name from properties")
+  void useCorrectBucketNameFromProperties() throws Exception {
+    // Arrange
+    var bucketName = "webprotege-project-history-documents";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, "test content");
 
-        // Assert
-        assertEquals(bucketName, result.bucket());
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
 
-        var bucketExistsCaptor = ArgumentCaptor.forClass(BucketExistsArgs.class);
-        verify(minioClient).bucketExists(bucketExistsCaptor.capture());
-        assertEquals(bucketName, bucketExistsCaptor.getValue().bucket());
-    }
+    // Act
+    var result = documentStorer.storeDocument(documentFile);
 
-    @Test
-    @DisplayName("Create bucket with correct name when it does not exist")
-    void createBucketWithCorrectNameWhenItDoesNotExist() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, "test content");
+    // Assert
+    assertEquals(bucketName, result.bucket());
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
+    var bucketExistsCaptor = ArgumentCaptor.forClass(BucketExistsArgs.class);
+    verify(minioClient).bucketExists(bucketExistsCaptor.capture());
+    assertEquals(bucketName, bucketExistsCaptor.getValue().bucket());
+  }
 
-        // Act
-        documentStorer.storeDocument(documentFile);
+  @Test
+  @DisplayName("Create bucket with correct name when it does not exist")
+  void createBucketWithCorrectNameWhenItDoesNotExist() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, "test content");
 
-        // Assert
-        var makeBucketCaptor = ArgumentCaptor.forClass(MakeBucketArgs.class);
-        verify(minioClient).makeBucket(makeBucketCaptor.capture());
-        assertEquals(bucketName, makeBucketCaptor.getValue().bucket());
-    }
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
 
-    @Test
-    @DisplayName("Upload file with correct content type")
-    void uploadFileWithCorrectContentType() throws Exception {
-        // Arrange
-        var bucketName = "test-bucket";
-        var documentFile = tempDir.resolve("test-document.bin");
-        Files.writeString(documentFile, "binary content");
+    // Act
+    documentStorer.storeDocument(documentFile);
 
-        when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+    // Assert
+    var makeBucketCaptor = ArgumentCaptor.forClass(MakeBucketArgs.class);
+    verify(minioClient).makeBucket(makeBucketCaptor.capture());
+    assertEquals(bucketName, makeBucketCaptor.getValue().bucket());
+  }
 
-        // Act
-        documentStorer.storeDocument(documentFile);
+  @Test
+  @DisplayName("Upload file with correct content type")
+  void uploadFileWithCorrectContentType() throws Exception {
+    // Arrange
+    var bucketName = "test-bucket";
+    var documentFile = tempDir.resolve("test-document.bin");
+    Files.writeString(documentFile, "binary content");
 
-        // Assert
-        var uploadArgsCaptor = ArgumentCaptor.forClass(UploadObjectArgs.class);
-        verify(minioClient).uploadObject(uploadArgsCaptor.capture());
-        assertEquals("application/octet-stream", uploadArgsCaptor.getValue().contentType());
-    }
+    when(minioProperties.getProjectHistoryDocumentsBucketName()).thenReturn(bucketName);
+    when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
+
+    // Act
+    documentStorer.storeDocument(documentFile);
+
+    // Assert
+    var uploadArgsCaptor = ArgumentCaptor.forClass(UploadObjectArgs.class);
+    verify(minioClient).uploadObject(uploadArgsCaptor.capture());
+    assertEquals("application/octet-stream", uploadArgsCaptor.getValue().contentType());
+  }
 }

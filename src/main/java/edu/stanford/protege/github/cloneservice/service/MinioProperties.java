@@ -7,43 +7,43 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "webprotege.minio")
 public class MinioProperties {
 
-    private String accessKey;
+  private String accessKey;
 
-    private String secretKey;
+  private String secretKey;
 
-    private String endPoint;
+  private String endPoint;
 
-    private String projectHistoryDocumentsBucketName;
+  private String projectHistoryDocumentsBucketName;
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
+  public void setAccessKey(String accessKey) {
+    this.accessKey = accessKey;
+  }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
+  public void setSecretKey(String secretKey) {
+    this.secretKey = secretKey;
+  }
 
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
-    }
+  public void setEndPoint(String endPoint) {
+    this.endPoint = endPoint;
+  }
 
-    public String getAccessKey() {
-        return accessKey;
-    }
+  public String getAccessKey() {
+    return accessKey;
+  }
 
-    public String getSecretKey() {
-        return secretKey;
-    }
+  public String getSecretKey() {
+    return secretKey;
+  }
 
-    public String getEndPoint() {
-        return endPoint;
-    }
+  public String getEndPoint() {
+    return endPoint;
+  }
 
-    public String getProjectHistoryDocumentsBucketName() {
-        return projectHistoryDocumentsBucketName;
-    }
+  public String getProjectHistoryDocumentsBucketName() {
+    return projectHistoryDocumentsBucketName;
+  }
 
-    public void setProjectHistoryDocumentsBucketName(String projectHistoryDocumentsBucketName) {
-        this.projectHistoryDocumentsBucketName = projectHistoryDocumentsBucketName;
-    }
+  public void setProjectHistoryDocumentsBucketName(String projectHistoryDocumentsBucketName) {
+    this.projectHistoryDocumentsBucketName = projectHistoryDocumentsBucketName;
+  }
 }
