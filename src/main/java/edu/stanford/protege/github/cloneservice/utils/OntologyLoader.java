@@ -13,8 +13,10 @@ import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /** Handles loading of ontology files using OWL-API */
+@Component
 public class OntologyLoader {
 
   private static final Logger logger = LoggerFactory.getLogger(OntologyLoader.class);

@@ -14,8 +14,10 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /** Main service for analyzing ontology history across Git commits */
+@Component
 public class OntologyHistoryAnalyzer {
 
   private static final Logger logger = LoggerFactory.getLogger(OntologyHistoryAnalyzer.class);

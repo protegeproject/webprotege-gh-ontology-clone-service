@@ -11,8 +11,10 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /** Calculates differences between ontology versions */
+@Component
 public class OntologyDifferenceCalculator {
 
   private static final Logger logger = LoggerFactory.getLogger(OntologyDifferenceCalculator.class);
