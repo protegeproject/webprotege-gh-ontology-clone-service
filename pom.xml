@@ -79,7 +79,7 @@
         </dependency>
         
         <dependency>
-            <groupId>edu.stanford.protege.commitnavigator</groupId>
+            <groupId>edu.stanford.protege</groupId>
             <artifactId>github-commit-navigator</artifactId>
             <version>1.0.0</version>
             <exclusions>
