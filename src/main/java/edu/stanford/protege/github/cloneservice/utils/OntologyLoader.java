@@ -74,7 +74,10 @@ public class OntologyLoader {
     ontologyManager.setOntologyLoaderConfiguration(config);
 
     // Add IRI mapper for local imports in the same directory
-    ontologyManager.getIRIMappers().add(new AutoIRIMapper(filePath.getParent().toFile(), true));
+    var parentDir = filePath.getParent();
+    if (parentDir != null) {
+      ontologyManager.getIRIMappers().add(new AutoIRIMapper(parentDir.toFile(), true));
+    }
     try {
       logger.info("Loading ontology from: {}", filePath);
       var ontology = ontologyManager.loadOntologyFromOntologyDocument(ontologyFile);
