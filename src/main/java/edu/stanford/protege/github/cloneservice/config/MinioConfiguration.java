@@ -5,9 +5,7 @@ import io.minio.MinioClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuration class for MinIO client setup.
- */
+/** Configuration class for MinIO client setup. */
 @Configuration
 public class MinioConfiguration {
 
