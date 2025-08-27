@@ -26,7 +26,8 @@ public class MinioProjectHistoryDocumentStorer {
   public MinioProjectHistoryDocumentStorer(
       @Nonnull MinioClient minioClient, @Nonnull MinioProperties minioProperties) {
     this.minioClient = Objects.requireNonNull(minioClient, "minioClient cannot be null");
-    this.minioProperties = Objects.requireNonNull(minioProperties, "minioProperties cannot be null");
+    this.minioProperties =
+        Objects.requireNonNull(minioProperties, "minioProperties cannot be null");
   }
 
   /**

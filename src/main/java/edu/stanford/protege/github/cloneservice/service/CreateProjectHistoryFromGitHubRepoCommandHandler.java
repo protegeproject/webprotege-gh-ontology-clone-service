@@ -17,7 +17,8 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
   public CreateProjectHistoryFromGitHubRepoCommandHandler(
       @Nonnull ProjectHistoryGenerator projectHistoryGenerator) {
-    this.projectHistoryGenerator = Objects.requireNonNull(projectHistoryGenerator, "projectHistoryGenerator cannot be null");
+    this.projectHistoryGenerator =
+        Objects.requireNonNull(projectHistoryGenerator, "projectHistoryGenerator cannot be null");
   }
 
   @NotNull @Override
@@ -40,10 +41,9 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
               request.projectId(),
               request.repositoryCoordinate(),
               request.targetOntologyFile());
-      return Mono.just(new CreateProjectHistoryFromGitHubRepoResponse(
-          request.projectId(),
-          request.repositoryCoordinate(),
-          projectHistoryDocumentLocation));
+      return Mono.just(
+          new CreateProjectHistoryFromGitHubRepoResponse(
+              request.projectId(), request.repositoryCoordinate(), projectHistoryDocumentLocation));
     } catch (Exception e) {
       return Mono.error(new RuntimeException(e));
     }
