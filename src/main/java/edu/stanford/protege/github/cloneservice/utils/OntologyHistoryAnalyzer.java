@@ -102,7 +102,7 @@ public class OntologyHistoryAnalyzer {
     var processedOntologyIds = Lists.<OWLOntologyID>newArrayList();
     for (var result : results) {
       allAxiomChanges.addAll(result.axiomChanges());
-      processedOntologyIds.add(result.ontologyId());
+      processedOntologyIds.add(result.ontologyID());
     }
 
     // Process removed ontologies (exist in previous but not in current)
@@ -190,10 +190,10 @@ public class OntologyHistoryAnalyzer {
 
   /** Internal record for holding ontology processing results */
   private record OntologyProcessingResult(
-      @Nonnull List<AxiomChange> axiomChanges, @Nonnull OWLOntologyID ontologyId) {
+      @Nonnull List<AxiomChange> axiomChanges, @Nonnull OWLOntologyID ontologyID) {
     private OntologyProcessingResult {
       Objects.requireNonNull(axiomChanges, "axiomChanges cannot be null");
-      Objects.requireNonNull(ontologyId, "ontologyId cannot be null");
+      Objects.requireNonNull(ontologyID, "ontologyID cannot be null");
     }
   }
 }

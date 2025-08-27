@@ -3,6 +3,7 @@ package edu.stanford.protege.github.cloneservice.service;
 import edu.stanford.protege.webprotege.ipc.CommandHandler;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import edu.stanford.protege.webprotege.ipc.WebProtegeHandler;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Mono;
@@ -16,7 +17,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
   public CreateProjectHistoryFromGitHubRepoCommandHandler(
       @Nonnull ProjectHistoryGenerator projectHistoryGenerator) {
-    this.projectHistoryGenerator = projectHistoryGenerator;
+    this.projectHistoryGenerator = Objects.requireNonNull(projectHistoryGenerator, "projectHistoryGenerator cannot be null");
   }
 
   @NotNull @Override

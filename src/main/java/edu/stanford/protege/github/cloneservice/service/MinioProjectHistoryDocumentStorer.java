@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.springframework.stereotype.Component;
@@ -24,8 +25,8 @@ public class MinioProjectHistoryDocumentStorer {
 
   public MinioProjectHistoryDocumentStorer(
       @Nonnull MinioClient minioClient, @Nonnull MinioProperties minioProperties) {
-    this.minioClient = minioClient;
-    this.minioProperties = minioProperties;
+    this.minioClient = Objects.requireNonNull(minioClient, "minioClient cannot be null");
+    this.minioProperties = Objects.requireNonNull(minioProperties, "minioProperties cannot be null");
   }
 
   /**
