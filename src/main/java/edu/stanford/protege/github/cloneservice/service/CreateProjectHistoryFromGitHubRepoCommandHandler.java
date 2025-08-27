@@ -39,9 +39,12 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
               request.projectId(),
               request.repositoryCoordinate(),
               request.targetOntologyFile());
+      return Mono.just(new CreateProjectHistoryFromGitHubRepoResponse(
+          request.projectId(),
+          request.repositoryCoordinate(),
+          projectHistoryDocumentLocation));
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      return Mono.error(new RuntimeException(e));
     }
-    return null;
   }
 }
