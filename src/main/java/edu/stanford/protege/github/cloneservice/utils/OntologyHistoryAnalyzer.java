@@ -6,6 +6,7 @@ import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
+import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class OntologyHistoryAnalyzer {
    */
   @Nonnull
   public List<OntologyCommitChange> getCommitHistory(
-      @Nonnull String ontologyFilePath, @Nonnull GitHubRepository gitHubRepository)
+      @Nonnull RelativeFilePath ontologyFilePath, @Nonnull GitHubRepository gitHubRepository)
       throws OntologyComparisonException {
 
     Objects.requireNonNull(ontologyFilePath, "ontologyFilePath cannot be null");
@@ -55,7 +56,7 @@ public class OntologyHistoryAnalyzer {
 
     try {
       var commitNavigator = gitHubRepository.getCommitNavigator();
-      var ontologyFile = commitNavigator.resolveFilePath(ontologyFilePath);
+      var ontologyFile = ontologyFilePath.asPath();
 
       while (true) {
         var commitMetadata = commitNavigator.getCurrentCommit();

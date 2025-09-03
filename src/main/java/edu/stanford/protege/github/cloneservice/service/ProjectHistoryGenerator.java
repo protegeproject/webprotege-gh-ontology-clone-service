@@ -4,6 +4,7 @@ import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.exceptions.GitHubNavigatorException;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
@@ -49,7 +50,7 @@ public class ProjectHistoryGenerator {
       UserId userId,
       ProjectId projectId,
       RepositoryCoordinates repositoryCoordinates,
-      String targetOntologyFile)
+      RelativeFilePath targetOntologyFile)
       throws Exception {
     var repository = getGitHubRepository(repositoryCoordinates);
     var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);

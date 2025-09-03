@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.service.ChangeCommitToRevisionConverter;
 import edu.stanford.protege.github.cloneservice.utils.OntologyDifferenceCalculator;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
@@ -46,7 +47,7 @@ class GroceryOntologyIntegrationTest {
   private static final String GROCERY_ONTOLOGY_URL =
       "https://github.com/protegeteam/grocery-ontology";
   private static final String MASTER_BRANCH = "master";
-  private static final String ONTOLOGY_FILE_PATH = "grocery.owl";
+  private static final RelativeFilePath ONTOLOGY_FILE_PATH = new RelativeFilePath("grocery.owl");
 
   private OntologyHistoryAnalyzer historyAnalyzer;
   private ChangeCommitToRevisionConverter revisionConverter;

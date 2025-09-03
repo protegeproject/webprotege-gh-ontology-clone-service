@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
+import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
@@ -63,7 +64,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Generate project history successfully")
   void generateProjectHistorySuccessfully() throws Exception {
     // Arrange
-    var targetOntologyFile = "test.owl";
+    var targetOntologyFile = new RelativeFilePath("test.owl");
     var projectHistory = List.of(commitChange1, commitChange2);
 
     when(ontologyHistoryAnalyzer.getCommitHistory(
@@ -102,7 +103,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Handle ontology history analyzer exception")
   void handleOntologyHistoryAnalyzerException() throws Exception {
     // Arrange
-    var targetOntologyFile = "test.owl";
+    var targetOntologyFile = new RelativeFilePath("test.owl");
     var expectedException = new RuntimeException("Analysis failed");
 
     when(ontologyHistoryAnalyzer.getCommitHistory(
@@ -140,7 +141,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Handle project history storer exception")
   void handleProjectHistoryStorerException() throws Exception {
     // Arrange
-    var targetOntologyFile = "test.owl";
+    var targetOntologyFile = new RelativeFilePath("test.owl");
     var projectHistory = List.of(commitChange1);
     var expectedException = new RuntimeException("Storage failed");
 
@@ -179,7 +180,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Configure GitHub repository with correct file filters")
   void configureGitHubRepositoryWithCorrectFileFilters() throws Exception {
     // Arrange
-    var targetOntologyFile = "test.owl";
+    var targetOntologyFile = new RelativeFilePath("test.owl");
     var projectHistory = List.of(commitChange1);
 
     when(ontologyHistoryAnalyzer.getCommitHistory(
@@ -215,7 +216,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Initialize GitHub repository before use")
   void initializeGitHubRepositoryBeforeUse() throws Exception {
     // Arrange
-    var targetOntologyFile = "test.owl";
+    var targetOntologyFile = new RelativeFilePath("test.owl");
     var projectHistory = List.of(commitChange1);
 
     when(ontologyHistoryAnalyzer.getCommitHistory(
@@ -254,7 +255,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Handle empty project history")
   void handleEmptyProjectHistory() throws Exception {
     // Arrange
-    var targetOntologyFile = "empty.owl";
+    var targetOntologyFile = new RelativeFilePath("empty.owl");
     var emptyProjectHistory = List.<OntologyCommitChange>of();
 
     when(ontologyHistoryAnalyzer.getCommitHistory(
@@ -292,7 +293,7 @@ class ProjectHistoryGeneratorTest {
   @DisplayName("Pass correct parameters to dependencies")
   void passCorrectParametersToDependencies() throws Exception {
     // Arrange
-    var targetOntologyFile = "specific.owl";
+    var targetOntologyFile = new RelativeFilePath("specific.owl");
     var projectHistory = List.of(commitChange1, commitChange2);
 
     when(ontologyHistoryAnalyzer.getCommitHistory(

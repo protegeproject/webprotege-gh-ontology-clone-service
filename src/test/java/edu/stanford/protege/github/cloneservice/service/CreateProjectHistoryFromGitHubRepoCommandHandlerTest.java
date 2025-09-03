@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
@@ -32,7 +33,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
   private ProjectId testProjectId;
   private UserId testUserId;
   private BlobLocation testBlobLocation;
-  private String testTargetOntologyFile;
+  private RelativeFilePath testTargetOntologyFile;
   private CreateProjectHistoryFromGitHubRepoRequest testRequest;
 
   @BeforeEach
@@ -41,7 +42,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     testProjectId = ProjectId.valueOf("12345678-1234-1234-1234-123456789012");
     testUserId = UserId.valueOf("test-user");
     testBlobLocation = new BlobLocation("test-bucket", "test/path/document.json");
-    testTargetOntologyFile = "ontology.owl";
+    testTargetOntologyFile = new RelativeFilePath("ontology.owl");
 
     testRequest =
         new CreateProjectHistoryFromGitHubRepoRequest(
@@ -81,7 +82,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     // Arrange
     var specificProjectId = ProjectId.valueOf("87654321-4321-4321-4321-210987654321");
     var specificUserId = UserId.valueOf("specific-user");
-    var specificTargetFile = "specific-ontology.ttl";
+    var specificTargetFile = new RelativeFilePath("specific-ontology.ttl");
     var specificRequest =
         new CreateProjectHistoryFromGitHubRepoRequest(
             specificProjectId, repositoryCoordinates, specificTargetFile);
