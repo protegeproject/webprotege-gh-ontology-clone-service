@@ -15,7 +15,7 @@ public record CreateProjectHistoryFromGitHubRepoRequest(
     @JsonProperty("targetOntologyFile") String targetOntologyFile)
     implements Request<CreateProjectHistoryFromGitHubRepoResponse> {
 
-  public static final String CHANNEL = "webprotege.cloneservice.CreateProjectHistoryFromGitHubRepo";
+  public static final String CHANNEL = "webprotege.github.CreateProjectHistoryFromGitHubRepo";
 
   @Override
   public String getChannel() {
