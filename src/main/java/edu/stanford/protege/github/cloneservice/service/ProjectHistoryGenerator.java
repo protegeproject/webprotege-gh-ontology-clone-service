@@ -3,7 +3,7 @@ package edu.stanford.protege.github.cloneservice.service;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.exceptions.GitHubNavigatorException;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinate;
+import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
@@ -38,7 +38,7 @@ public class ProjectHistoryGenerator {
    *
    * @param userId the unique identifier of the WebProtege user
    * @param projectId the unique identifier of the ontology project in WebProtege
-   * @param repositoryCoordinate the GitHub repository specification
+   * @param repositoryCoordinates the GitHub repository specification
    * @param targetOntologyFile the ontology file in the repository to generate the history for
    * @return a {@link BlobLocation} indicating where the project history document has been stored
    * @throws Exception if an error occurs during repository access, history analysis, or storage
@@ -48,20 +48,20 @@ public class ProjectHistoryGenerator {
   public BlobLocation writeProjectHistoryFromGitHubRepo(
       UserId userId,
       ProjectId projectId,
-      RepositoryCoordinate repositoryCoordinate,
+      RepositoryCoordinates repositoryCoordinates,
       String targetOntologyFile)
       throws Exception {
-    var repository = getGitHubRepository(repositoryCoordinate);
+    var repository = getGitHubRepository(repositoryCoordinates);
     var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
     var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
     logger.info("Stored project history document at: {}", projectHistoryLocation);
     return projectHistoryLocation;
   }
 
-  private GitHubRepository getGitHubRepository(RepositoryCoordinate repositoryCoordinate)
+  private GitHubRepository getGitHubRepository(RepositoryCoordinates repositoryCoordinates)
       throws GitHubNavigatorException {
     var repository =
-        GitHubRepositoryBuilderFactory.create(repositoryCoordinate)
+        GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
             .fileFilters("*.owl", "*.rdf", "*.ttl")
             .build();
     repository.initialize();

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinate;
+import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.service.ChangeCommitToRevisionConverter;
 import edu.stanford.protege.github.cloneservice.utils.OntologyDifferenceCalculator;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
@@ -269,11 +269,11 @@ class GroceryOntologyIntegrationTest {
    * @throws Exception if repository creation or initialization fails
    */
   private GitHubRepository createGitHubRepository(String cloneDirectory) throws Exception {
-    var repositoryCoordinate =
-        RepositoryCoordinate.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+    var repositoryCoordinates =
+        RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
 
     var repository =
-        GitHubRepositoryBuilderFactory.create(repositoryCoordinate)
+        GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
             .fileFilters("*.owl")
             .localCloneDirectory(cloneDirectory)
             .build();

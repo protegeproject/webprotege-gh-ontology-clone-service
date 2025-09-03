@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinate;
+import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
@@ -31,7 +31,7 @@ class ProjectHistoryGeneratorTest {
 
   @Mock private ProjectHistoryStorer projectHistoryStorer;
 
-  @Mock private RepositoryCoordinate repositoryCoordinate;
+  @Mock private RepositoryCoordinates repositoryCoordinates;
 
   @Mock private GitHubRepository gitHubRepository;
 
@@ -80,7 +80,7 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
@@ -88,7 +88,7 @@ class ProjectHistoryGeneratorTest {
       // Act
       var result =
           projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-              testUserId, testProjectId, repositoryCoordinate, targetOntologyFile);
+              testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
       assertEquals(testBlobLocation, result);
@@ -118,7 +118,7 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
@@ -129,7 +129,7 @@ class ProjectHistoryGeneratorTest {
               Exception.class,
               () ->
                   projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                      testUserId, testProjectId, repositoryCoordinate, targetOntologyFile));
+                      testUserId, testProjectId, repositoryCoordinates, targetOntologyFile));
 
       assertEquals(expectedException, exception);
       verify(projectHistoryStorer, never()).storeProjectHistory(any());
@@ -158,7 +158,7 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
@@ -169,7 +169,7 @@ class ProjectHistoryGeneratorTest {
               Exception.class,
               () ->
                   projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                      testUserId, testProjectId, repositoryCoordinate, targetOntologyFile));
+                      testUserId, testProjectId, repositoryCoordinates, targetOntologyFile));
 
       assertEquals(expectedException, exception);
     }
@@ -196,14 +196,14 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
       projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-          testUserId, testProjectId, repositoryCoordinate, targetOntologyFile);
+          testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
       verify(mockBuilder).fileFilters("*.owl", "*.rdf", "*.ttl");
@@ -232,14 +232,14 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
       projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-          testUserId, testProjectId, repositoryCoordinate, targetOntologyFile);
+          testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
       var inOrder = inOrder(gitHubRepository, ontologyHistoryAnalyzer);
@@ -272,7 +272,7 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
@@ -280,7 +280,7 @@ class ProjectHistoryGeneratorTest {
       // Act
       var result =
           projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-              testUserId, testProjectId, repositoryCoordinate, targetOntologyFile);
+              testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
       assertEquals(testBlobLocation, result);
@@ -309,14 +309,14 @@ class ProjectHistoryGeneratorTest {
           .when(
               () ->
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                      repositoryCoordinate))
+                      repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
       projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-          testUserId, testProjectId, repositoryCoordinate, targetOntologyFile);
+          testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
       verify(ontologyHistoryAnalyzer).getCommitHistory(targetOntologyFile, gitHubRepository);
