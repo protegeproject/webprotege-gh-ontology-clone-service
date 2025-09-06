@@ -9,6 +9,10 @@ import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,18 +56,27 @@ public class ProjectHistoryGenerator {
       RepositoryCoordinates repositoryCoordinates,
       RelativeFilePath targetOntologyFile)
       throws Exception {
-    var repository = getGitHubRepository(repositoryCoordinates);
+    var localCloneDirectory = getLocalCloneDirectory(userId, projectId);
+    var repository = getGitHubRepository(repositoryCoordinates, localCloneDirectory);
     var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
     var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
     logger.info("Stored project history document at: {}", projectHistoryLocation);
     return projectHistoryLocation;
   }
 
-  private GitHubRepository getGitHubRepository(RepositoryCoordinates repositoryCoordinates)
+  private Path getLocalCloneDirectory(UserId userId, ProjectId projectId) throws IOException {
+    var tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+    return tempDir.resolve(
+        "github-repos" + File.separator + userId.value() + File.separator + projectId.value());
+  }
+
+  private GitHubRepository getGitHubRepository(
+      RepositoryCoordinates repositoryCoordinates, Path localCloneDirectory)
       throws GitHubNavigatorException {
     var repository =
         GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
             .fileFilters("*.owl", "*.rdf", "*.ttl")
+            .localCloneDirectory(localCloneDirectory)
             .build();
     repository.initialize();
     return repository;
