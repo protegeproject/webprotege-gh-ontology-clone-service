@@ -56,7 +56,8 @@ public class OntologyHistoryAnalyzer {
 
     try {
       var commitNavigator = gitHubRepository.getCommitNavigator();
-      var ontologyFile = ontologyFilePath.asPath();
+      var cloneDirectory = gitHubRepository.getConfig().getLocalCloneDirectory();
+      var ontologyFile = cloneDirectory.resolve(ontologyFilePath.asPath());
 
       while (true) {
         var commitMetadata = commitNavigator.getCurrentCommit();
