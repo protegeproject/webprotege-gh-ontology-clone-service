@@ -2,6 +2,7 @@ package edu.stanford.protege.github.cloneservice.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,14 +35,16 @@ class OntologyLoaderTest {
   }
 
   @Test
-  @DisplayName("Should return empty list when file does not exist")
-  void returnEmptyListWhenFileDoesNotExist() {
+  @DisplayName("Should throw FileNotFoundException when ontology file does not exist")
+  void throwExceptionWhenFileDoesNotExist() {
     var nonExistentFile = tempDir.resolve("non-existent.owl");
 
-    var result = ontologyLoader.loadOntologyWithImports(nonExistentFile);
+    var exception =
+        assertThrows(
+            FileNotFoundException.class,
+            () -> ontologyLoader.loadOntologyWithImports(nonExistentFile));
 
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertEquals("Ontology file does not exist: " + nonExistentFile, exception.getMessage());
   }
 
   @Test
