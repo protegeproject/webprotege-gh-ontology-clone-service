@@ -84,6 +84,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -122,6 +123,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act & Assert
@@ -162,6 +164,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act & Assert
@@ -200,6 +203,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -236,6 +240,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -276,6 +281,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -313,6 +319,7 @@ class ProjectHistoryGeneratorTest {
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
       when(mockBuilder.fileFilters("*.owl", "*.rdf", "*.ttl")).thenReturn(mockBuilder);
+      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
