@@ -1,6 +1,7 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -56,13 +57,15 @@ public class OntologyLoader {
    * @throws NullPointerException if {@code filePath} is {@code null}
    */
   @Nonnull
-  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath) {
+  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath)
+      throws FileNotFoundException {
     Objects.requireNonNull(filePath, "filePath cannot be null");
 
     var ontologyFile = filePath.toFile();
     if (!ontologyFile.exists()) {
-      logger.warn("Ontology file does not exist: {}", filePath);
-      return ImmutableList.of();
+      var message = "Ontology file does not exist: " + filePath;
+      logger.error(message);
+      throw new FileNotFoundException(message);
     }
 
     var ontologyManager = OWLManager.createOWLOntologyManager();
