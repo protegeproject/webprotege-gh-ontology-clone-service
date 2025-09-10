@@ -70,4 +70,8 @@ public record RelativeFilePath(@JsonProperty("path") String value) {
   public Path asPath() {
     return Paths.get(value);
   }
+
+  public String asString() {
+    return value;
+  }
 }

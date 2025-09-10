@@ -57,7 +57,8 @@ public class ProjectHistoryGenerator {
       RelativeFilePath targetOntologyFile)
       throws Exception {
     var localCloneDirectory = getLocalCloneDirectory(userId, projectId);
-    var repository = getGitHubRepository(repositoryCoordinates, localCloneDirectory);
+    var repository =
+        getGitHubRepository(repositoryCoordinates, localCloneDirectory, targetOntologyFile);
     var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
     var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
     logger.info("Stored project history document at: {}", projectHistoryLocation);
@@ -71,11 +72,13 @@ public class ProjectHistoryGenerator {
   }
 
   private GitHubRepository getGitHubRepository(
-      RepositoryCoordinates repositoryCoordinates, Path localCloneDirectory)
+      RepositoryCoordinates repositoryCoordinates,
+      Path localCloneDirectory,
+      RelativeFilePath targetOntologyFile)
       throws GitHubNavigatorException {
     var repository =
         GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
-            .fileFilters("*.owl", "*.rdf", "*.ttl")
+            .fileFilters(targetOntologyFile.asString())
             .localCloneDirectory(localCloneDirectory)
             .build();
     repository.initialize();
