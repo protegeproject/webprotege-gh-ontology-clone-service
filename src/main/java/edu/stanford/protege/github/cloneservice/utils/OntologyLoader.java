@@ -2,10 +2,15 @@ package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.protege.xmlcatalog.owlapi.XMLCatalogIRIMapper;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -57,8 +62,7 @@ public class OntologyLoader {
    * @throws NullPointerException if {@code filePath} is {@code null}
    */
   @Nonnull
-  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath)
-      throws FileNotFoundException {
+  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath) throws IOException {
     Objects.requireNonNull(filePath, "filePath cannot be null");
 
     var ontologyFile = filePath.toFile();
@@ -77,9 +81,19 @@ public class OntologyLoader {
     ontologyManager.setOntologyLoaderConfiguration(config);
 
     // Add IRI mapper for local imports in the same directory
+    ontologyManager.getIRIMappers().clear();
     var parentDir = filePath.getParent();
     if (parentDir != null) {
-      ontologyManager.getIRIMappers().add(new AutoIRIMapper(parentDir.toFile(), true));
+      var catalogFile = findCatalogFile(parentDir);
+      if (catalogFile.isPresent()) {
+        var newMapper = new XMLCatalogIRIMapper(catalogFile.get().toFile());
+        ontologyManager.getIRIMappers().add(newMapper);
+        logger.debug("Using XMLCatalogIRIMapper with catalog file: {}", catalogFile.get());
+      } else {
+        var newMapper = new AutoIRIMapper(parentDir.toFile(), true);
+        ontologyManager.getIRIMappers().add(newMapper);
+        logger.debug("Using AutoIRIMapper for directory: {}", parentDir);
+      }
     }
     try {
       logger.info("Loading ontology from: {}", filePath);
@@ -93,6 +107,31 @@ public class OntologyLoader {
       return ImmutableList.<OWLOntology>builder().add(ontology).addAll(importedOntologies).build();
     } catch (OWLOntologyCreationException e) {
       throw new RuntimeException("Failed to load ontology from: " + filePath, e);
+    }
+  }
+
+  /**
+   * Finds a catalog file in the directory (catalog-v001.xml or catalog-*.xml)
+   *
+   * @param directory the directory to search
+   * @return an Optional containing the path to the catalog file if found, empty otherwise
+   */
+  @Nonnull
+  private Optional<Path> findCatalogFile(@Nonnull Path directory) {
+    Objects.requireNonNull(directory, "directory cannot be null");
+
+    try (Stream<Path> files = Files.list(directory)) {
+      return files
+          .filter(
+              file -> {
+                var fileName = file.getFileName().toString();
+                return fileName.equals("catalog-v001.xml")
+                    || (fileName.startsWith("catalog-") && fileName.endsWith(".xml"));
+              })
+          .findFirst();
+    } catch (IOException e) {
+      logger.warn("Failed to list files in directory: {}", directory, e);
+      return Optional.empty();
     }
   }
 }
