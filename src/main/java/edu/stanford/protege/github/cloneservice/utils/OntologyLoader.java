@@ -12,14 +12,20 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.protege.xmlcatalog.owlapi.XMLCatalogIRIMapper;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.oboformat.OBOFormatOWLAPIParserFactory;
+import org.semanticweb.owlapi.owlxml.parser.OWLXMLParserFactory;
+import org.semanticweb.owlapi.rdf.rdfxml.parser.RDFXMLParserFactory;
+import org.semanticweb.owlapi.rdf.turtle.parser.TurtleOntologyParserFactory;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+import uk.ac.manchester.cs.owl.owlapi.OWLOntologyFactoryImpl;
+import uk.ac.manchester.cs.owl.owlapi.OWLOntologyManagerImpl;
+import uk.ac.manchester.cs.owl.owlapi.concurrent.NoOpReadWriteLock;
+import uk.ac.manchester.cs.owl.owlapi.concurrent.NonConcurrentOWLOntologyBuilder;
 
 /** Handles loading of ontology files using OWL-API */
 @Component
@@ -72,13 +78,7 @@ public class OntologyLoader {
       throw new FileNotFoundException(message);
     }
 
-    var ontologyManager = OWLManager.createOWLOntologyManager();
-
-    // Configure silent handling of missing/anonymous imports
-    var config =
-        new OWLOntologyLoaderConfiguration()
-            .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-    ontologyManager.setOntologyLoaderConfiguration(config);
+    var ontologyManager = getOntologyManager();
 
     // Add IRI mapper for local imports in the same directory
     ontologyManager.getIRIMappers().clear();
@@ -133,5 +133,34 @@ public class OntologyLoader {
       logger.warn("Failed to list files in directory: {}", directory, e);
       return Optional.empty();
     }
+  }
+
+  private OWLOntologyManager getOntologyManager() {
+    var man =
+        new OWLOntologyManagerImpl(new OWLDataFactoryImpl(), new NoOpReadWriteLock()) {
+          @Override
+          public void makeLoadImportRequest(
+              OWLImportsDeclaration declaration, OWLOntologyLoaderConfiguration configuration) {
+            var config = getOntologyLoaderConfiguration();
+            super.makeLoadImportRequest(declaration, config);
+          }
+        };
+    man.getOntologyFactories()
+        .add(new OWLOntologyFactoryImpl(new NonConcurrentOWLOntologyBuilder()));
+
+    // Add parsers that we care about
+    var ontologyParsers = man.getOntologyParsers();
+    ontologyParsers.add(new OBOFormatOWLAPIParserFactory());
+    ontologyParsers.add(new RDFXMLParserFactory());
+    ontologyParsers.add(new OWLXMLParserFactory());
+    ontologyParsers.add(new TurtleOntologyParserFactory());
+
+    // Configure silent handling of missing/anonymous imports
+    var config =
+        new OWLOntologyLoaderConfiguration()
+            .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+    man.setOntologyLoaderConfiguration(config);
+
+    return man;
   }
 }
