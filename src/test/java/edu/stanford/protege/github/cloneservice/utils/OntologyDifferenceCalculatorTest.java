@@ -47,7 +47,7 @@ class OntologyDifferenceCalculatorTest {
             NullPointerException.class,
             () -> differenceCalculator.calculateAxiomChanges(null, previousOntology, ontologyId));
 
-    assertEquals("currentOntology cannot be null", exception.getMessage());
+    assertEquals("childCommitOntology cannot be null", exception.getMessage());
   }
 
   @Test
@@ -58,7 +58,7 @@ class OntologyDifferenceCalculatorTest {
             NullPointerException.class,
             () -> differenceCalculator.calculateAxiomChanges(currentOntology, null, ontologyId));
 
-    assertEquals("previousOntology cannot be null", exception.getMessage());
+    assertEquals("parentCommitOntology cannot be null", exception.getMessage());
   }
 
   @Test

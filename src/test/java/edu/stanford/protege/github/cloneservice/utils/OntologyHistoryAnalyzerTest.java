@@ -1,6 +1,7 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
@@ -80,7 +81,8 @@ class OntologyHistoryAnalyzerTest {
     var ontologyFile = new RelativeFilePath("test.owl");
 
     // Simulate the repository throwing an exception during navigation
-    when(gitHubRepository.getCommitNavigator()).thenThrow(new RuntimeException("Repository error"));
+    when(gitHubRepository.getCommitNavigator(any()))
+        .thenThrow(new RuntimeException("Repository error"));
 
     var exception =
         assertThrows(
