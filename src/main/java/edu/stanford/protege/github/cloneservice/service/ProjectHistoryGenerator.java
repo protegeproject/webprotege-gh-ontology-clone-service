@@ -78,7 +78,6 @@ public class ProjectHistoryGenerator {
       throws GitHubNavigatorException {
     var repository =
         GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
-            .fileFilters(targetOntologyFile.asString())
             .localCloneDirectory(localCloneDirectory)
             .build();
     repository.initialize();

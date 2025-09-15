@@ -83,7 +83,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -122,7 +121,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -163,7 +161,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -202,7 +199,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -211,7 +207,6 @@ class ProjectHistoryGeneratorTest {
           testUserId, testProjectId, repositoryCoordinates, targetOntologyFile);
 
       // Assert
-      verify(mockBuilder).fileFilters(targetOntologyFile.asString());
       verify(mockBuilder).build();
     }
   }
@@ -239,7 +234,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -280,7 +274,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
@@ -318,7 +311,6 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.fileFilters(targetOntologyFile.asString())).thenReturn(mockBuilder);
       when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 

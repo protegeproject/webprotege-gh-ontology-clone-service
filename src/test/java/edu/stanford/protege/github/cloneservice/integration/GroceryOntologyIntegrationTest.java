@@ -275,7 +275,6 @@ class GroceryOntologyIntegrationTest {
 
     var repository =
         GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
-            .fileFilters("*.owl")
             .localCloneDirectory(cloneDirectory)
             .build();
     repository.initialize();
