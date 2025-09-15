@@ -68,35 +68,36 @@ public class OntologyHistoryAnalyzer {
       var ontologyFile = commitNavigator.resolveFilePath(targetOntologyFile);
 
       // Get the current commit metadata
-      var currentCommitMetadata = commitNavigator.getCurrentCommit();
-      var currentOntologies = loadOntologiesWithErrorHandling(ontologyFile, currentCommitMetadata);
+      var childCommitMetadata = commitNavigator.getCurrentCommit();
+      var childCommitOntologies =
+          loadOntologiesWithErrorHandling(ontologyFile, childCommitMetadata);
 
       while (commitNavigator.hasPrevious()) {
         // Trace back to previous commit
         commitNavigator.previousAndCheckout();
 
         // Get the previous commit metadata
-        var previousCommitMetadata = commitNavigator.getCurrentCommit();
+        var parentCommitMetadata = commitNavigator.getCurrentCommit();
 
         // Load ontologies at the previous commit
-        var previousOntologies =
-            loadOntologiesWithErrorHandling(ontologyFile, previousCommitMetadata);
+        var parentCommitOntologies =
+            loadOntologiesWithErrorHandling(ontologyFile, parentCommitMetadata);
 
-        if (currentOntologies != null && previousOntologies != null) {
+        if (childCommitOntologies != null && parentCommitOntologies != null) {
           var axiomChanges =
-              calculateAxiomChangesBetweenCommits(currentOntologies, previousOntologies);
-          allCommitChanges.add(new OntologyCommitChange(axiomChanges, currentCommitMetadata));
+              calculateAxiomChangesBetweenOntologies(childCommitOntologies, parentCommitOntologies);
+          allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
 
-          // Swap the previous ontology to be the current
-          currentOntologies = previousOntologies;
-          currentCommitMetadata = previousCommitMetadata;
+          // Swap the metadata and ontologies from parent commit to be the child commit
+          childCommitOntologies = parentCommitOntologies;
+          childCommitMetadata = parentCommitMetadata;
         }
       }
 
       // Handle the initial commit
-      if (currentOntologies != null) {
-        var axiomChanges = calculateInitialCommitChanges(currentOntologies);
-        allCommitChanges.add(new OntologyCommitChange(axiomChanges, currentCommitMetadata));
+      if (childCommitOntologies != null) {
+        var axiomChanges = calculateInitialOntologyChanges(childCommitOntologies);
+        allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
       }
 
       return ImmutableList.copyOf(allCommitChanges);
@@ -128,20 +129,21 @@ public class OntologyHistoryAnalyzer {
   /**
    * Calculates axiom changes between current and previous commit ontologies
    *
-   * @param currentOntologies ontologies from current commit
-   * @param previousOntologies ontologies from previous commit
+   * @param childCommitOntologies ontologies from the child commit
+   * @param parentCommitOntologies ontologies from the parent commit
    * @return list of axiom changes between commits
    */
   @Nonnull
-  private List<AxiomChange> calculateAxiomChangesBetweenCommits(
-      @Nonnull List<OWLOntology> currentOntologies, @Nonnull List<OWLOntology> previousOntologies) {
+  private List<AxiomChange> calculateAxiomChangesBetweenOntologies(
+      @Nonnull List<OWLOntology> childCommitOntologies,
+      @Nonnull List<OWLOntology> parentCommitOntologies) {
 
     var allAxiomChanges = Lists.<AxiomChange>newArrayList();
 
     // Process current ontologies one by one and find their previous versions
     var results =
-        currentOntologies.stream()
-            .map(current -> processMatchingOntology(current, previousOntologies))
+        childCommitOntologies.stream()
+            .map(current -> processMatchingOntology(current, parentCommitOntologies))
             .toList();
 
     var processedOntologyIds = Lists.<OWLOntologyID>newArrayList();
@@ -150,10 +152,10 @@ public class OntologyHistoryAnalyzer {
       processedOntologyIds.add(result.ontologyID());
     }
 
-    // Process removed ontologies (exist in previous but not in current)
+    // Process removed ontologies (exist in the parent commit but not in the child commit)
     var emptyOntology = ontologyLoader.createEmptyOntology();
     var removedOntologyChanges =
-        previousOntologies.stream()
+        parentCommitOntologies.stream()
             .filter(ontology -> !processedOntologyIds.contains(ontology.getOntologyID()))
             .flatMap(
                 ontology ->
@@ -169,15 +171,14 @@ public class OntologyHistoryAnalyzer {
   /**
    * Calculates axiom changes for the initial commit (compared to empty ontology)
    *
-   * @param currentOntologies ontologies from the initial commit
+   * @param ontologies ontologies from the initial commit
    * @return list of axiom changes for initial commit
    */
   @Nonnull
-  private List<AxiomChange> calculateInitialCommitChanges(
-      @Nonnull List<OWLOntology> currentOntologies) {
+  private List<AxiomChange> calculateInitialOntologyChanges(@Nonnull List<OWLOntology> ontologies) {
 
     var emptyOntology = ontologyLoader.createEmptyOntology();
-    return currentOntologies.stream()
+    return ontologies.stream()
         .flatMap(
             ontology ->
                 differenceCalculator
@@ -187,38 +188,39 @@ public class OntologyHistoryAnalyzer {
   }
 
   /**
-   * Processes a current ontology by finding its matching previous version and calculating changes.
-   * If no match is found, compares it to an empty ontology.
+   * Processes an ontology from a child commit by finding first its match from the parent commit and
+   * then calculating changes. If no match is found, compares it to an empty ontology.
    *
-   * @param currentOntology the ontology to process
-   * @param previousOntologies list of previous ontologies to match against
+   * @param childCommitOntology the ontology to process from a child commit.
+   * @param parentCommitOntologies list of ontologies to match against, coming from the parent
+   *     commit.
    * @return processing result containing axiom changes and ontology ID
    */
   @Nonnull
   private OntologyProcessingResult processMatchingOntology(
-      @Nonnull OWLOntology currentOntology, @Nonnull List<OWLOntology> previousOntologies) {
+      @Nonnull OWLOntology childCommitOntology, @Nonnull List<OWLOntology> parentCommitOntologies) {
 
     var emptyOntology = ontologyLoader.createEmptyOntology();
 
-    var ontologyId = currentOntology.getOntologyID();
-    var matchingPrevious = findMatchingOntology(currentOntology, previousOntologies);
+    var ontologyId = childCommitOntology.getOntologyID();
+    var matchedOntology = findMatchingOntology(childCommitOntology, parentCommitOntologies);
 
     var axiomChanges =
-        matchingPrevious
+        matchedOntology
             .map(
-                previous ->
+                parentCommitOntology ->
                     differenceCalculator.calculateAxiomChanges(
-                        currentOntology, previous, ontologyId))
+                        childCommitOntology, parentCommitOntology, ontologyId))
             .orElseGet(
                 () ->
                     differenceCalculator.calculateAxiomChanges(
-                        currentOntology, emptyOntology, ontologyId));
+                        childCommitOntology, emptyOntology, ontologyId));
 
     return new OntologyProcessingResult(axiomChanges, ontologyId);
   }
 
   /**
-   * Finds matching ontology in the previous ontologies list
+   * Finds matching ontology in the given ontologies list
    *
    * @param targetOntology the ontology to find a match for
    * @param ontologiesToSearch list of ontologies to search in

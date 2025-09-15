@@ -20,32 +20,32 @@ public class OntologyDifferenceCalculator {
   private static final Logger logger = LoggerFactory.getLogger(OntologyDifferenceCalculator.class);
 
   /**
-   * Calculates differences between current and previous ontology versions
+   * Calculates differences between child and parent commit ontologies
    *
-   * @param currentOntology The current version of the ontology
-   * @param previousOntology The previous version of the ontology
+   * @param childCommitOntology The ontology from a child commit
+   * @param parentCommitOntology The ontology from a parent commit
    * @return OntologyDifference containing all changes for this commit
    */
   @Nonnull
   public List<AxiomChange> calculateAxiomChanges(
-      @Nonnull OWLOntology currentOntology,
-      @Nonnull OWLOntology previousOntology,
+      @Nonnull OWLOntology childCommitOntology,
+      @Nonnull OWLOntology parentCommitOntology,
       @Nonnull OWLOntologyID ontologyId) {
 
-    Objects.requireNonNull(currentOntology, "currentOntology cannot be null");
-    Objects.requireNonNull(previousOntology, "previousOntology cannot be null");
+    Objects.requireNonNull(childCommitOntology, "childCommitOntology cannot be null");
+    Objects.requireNonNull(parentCommitOntology, "parentCommitOntology cannot be null");
 
     var axiomChanges = Lists.<AxiomChange>newArrayList();
 
-    var currentAxioms = Sets.newHashSet(currentOntology.getAxioms());
-    var previousAxioms = Sets.newHashSet(previousOntology.getAxioms());
+    var childCommitAxioms = Sets.newHashSet(childCommitOntology.getAxioms());
+    var parentCommitAxioms = Sets.newHashSet(parentCommitOntology.getAxioms());
 
     // Find added axioms (present in current but not in previous)
-    var addedAxioms = findAddedAxioms(currentAxioms, previousAxioms);
+    var addedAxioms = findAddedAxioms(childCommitAxioms, parentCommitAxioms);
     addedAxioms.forEach(axiom -> axiomChanges.add(AxiomChange.addAxiom(axiom, ontologyId)));
 
     // Find removed axioms (present in previous but not in current)
-    var removedAxioms = findRemovedAxioms(currentAxioms, previousAxioms);
+    var removedAxioms = findRemovedAxioms(childCommitAxioms, parentCommitAxioms);
     removedAxioms.forEach(axiom -> axiomChanges.add(AxiomChange.removeAxiom(axiom, ontologyId)));
 
     logger.info(
