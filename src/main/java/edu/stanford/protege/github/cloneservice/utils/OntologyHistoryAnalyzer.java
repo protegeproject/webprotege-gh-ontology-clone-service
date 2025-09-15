@@ -3,10 +3,12 @@ package edu.stanford.protege.github.cloneservice.utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
+import edu.stanford.protege.commitnavigator.model.CommitMetadata;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,29 +58,63 @@ public class OntologyHistoryAnalyzer {
 
     try {
       var commitNavigator = gitHubRepository.getCommitNavigator();
-      var cloneDirectory = gitHubRepository.getConfig().getLocalCloneDirectory();
-      var ontologyFile = cloneDirectory.resolve(ontologyFilePath.asPath());
+      var ontologyFile = commitNavigator.resolveFilePath(ontologyFilePath.asString());
 
-      while (true) {
-        var commitMetadata = commitNavigator.getCurrentCommit();
-        var currentOntologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+      // Get the current commit metadata
+      var currentCommitMetadata = commitNavigator.getCurrentCommit();
+      var currentOntologies = loadOntologiesWithErrorHandling(ontologyFile, currentCommitMetadata);
 
-        if (commitNavigator.hasPrevious()) {
-          commitNavigator.previousAndCheckout();
-          var previousOntologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+      while (commitNavigator.hasPrevious()) {
+        // Trace back to previous commit
+        commitNavigator.previousAndCheckout();
+
+        // Get the previous commit metadata
+        var previousCommitMetadata = commitNavigator.getCurrentCommit();
+
+        // Load ontologies at the previous commit
+        var previousOntologies =
+            loadOntologiesWithErrorHandling(ontologyFile, previousCommitMetadata);
+
+        if (currentOntologies != null && previousOntologies != null) {
           var axiomChanges =
               calculateAxiomChangesBetweenCommits(currentOntologies, previousOntologies);
-          allCommitChanges.add(new OntologyCommitChange(axiomChanges, commitMetadata));
-        } else {
-          var axiomChanges = calculateInitialCommitChanges(currentOntologies);
-          allCommitChanges.add(new OntologyCommitChange(axiomChanges, commitMetadata));
-          break;
+          allCommitChanges.add(new OntologyCommitChange(axiomChanges, currentCommitMetadata));
+
+          // Swap the previous ontology to be the current
+          currentOntologies = previousOntologies;
+          currentCommitMetadata = previousCommitMetadata;
         }
       }
-      return ImmutableList.copyOf(allCommitChanges);
 
+      // Handle the initial commit
+      if (currentOntologies != null) {
+        var axiomChanges = calculateInitialCommitChanges(currentOntologies);
+        allCommitChanges.add(new OntologyCommitChange(axiomChanges, currentCommitMetadata));
+      }
+
+      return ImmutableList.copyOf(allCommitChanges);
     } catch (Exception e) {
       throw new OntologyComparisonException("Failed to analyze ontology commit history", e);
+    }
+  }
+
+  /**
+   * Loads ontologies with centralized error handling and logging
+   *
+   * @param ontologyFile the ontology file to load
+   * @param commitMetadata metadata of the current commit for logging
+   * @return loaded ontologies or null if loading failed
+   */
+  private List<OWLOntology> loadOntologiesWithErrorHandling(
+      @Nonnull Path ontologyFile, @Nonnull CommitMetadata commitMetadata) {
+    try {
+      return ontologyLoader.loadOntologyWithImports(ontologyFile);
+    } catch (Exception e) {
+      logger.info(
+          "Skipping commit {} due to ontology load error: {}",
+          commitMetadata.commitHash(),
+          e.getMessage());
+      return null;
     }
   }
 
