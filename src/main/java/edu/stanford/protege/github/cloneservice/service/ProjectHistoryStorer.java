@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.springframework.stereotype.Component;
@@ -42,9 +44,10 @@ public class ProjectHistoryStorer {
   public BlobLocation storeProjectHistory(List<OntologyCommitChange> projectHistory) {
     try {
       var tempFile = Files.createTempFile("webprotege-", "-clone-project-history.bin");
-      projectHistory
-          .reversed() // Reverse the order to have the oldest changes as the first revision
-          .stream()
+      // Reverse the order to have the oldest changes as the first revision
+      var reversedHistory = new ArrayList<>(projectHistory);
+      Collections.reverse(reversedHistory);
+      reversedHistory.stream()
           .map(changeCommitToRevisionConverter::convert)
           .forEach(revision -> serialize(revision, tempFile));
       var location = minioProjectHistoryDocumentStorer.storeDocument(tempFile);
