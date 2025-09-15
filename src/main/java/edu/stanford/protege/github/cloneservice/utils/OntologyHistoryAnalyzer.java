@@ -83,9 +83,10 @@ public class OntologyHistoryAnalyzer {
         var parentCommitOntologies =
             loadOntologiesWithErrorHandling(ontologyFile, parentCommitMetadata);
 
-        if (childCommitOntologies != null && parentCommitOntologies != null) {
+        if (childCommitOntologies.isPresent() && parentCommitOntologies.isPresent()) {
           var axiomChanges =
-              calculateAxiomChangesBetweenOntologies(childCommitOntologies, parentCommitOntologies);
+              calculateAxiomChangesBetweenOntologies(
+                  childCommitOntologies.get(), parentCommitOntologies.get());
           allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
 
           // Swap the metadata and ontologies from parent commit to be the child commit
@@ -95,8 +96,8 @@ public class OntologyHistoryAnalyzer {
       }
 
       // Handle the initial commit
-      if (childCommitOntologies != null) {
-        var axiomChanges = calculateInitialOntologyChanges(childCommitOntologies);
+      if (childCommitOntologies.isPresent()) {
+        var axiomChanges = calculateInitialOntologyChanges(childCommitOntologies.get());
         allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
       }
 
@@ -113,16 +114,17 @@ public class OntologyHistoryAnalyzer {
    * @param commitMetadata metadata of the current commit for logging
    * @return loaded ontologies or null if loading failed
    */
-  private List<OWLOntology> loadOntologiesWithErrorHandling(
+  private Optional<List<OWLOntology>> loadOntologiesWithErrorHandling(
       @Nonnull Path ontologyFile, @Nonnull CommitMetadata commitMetadata) {
     try {
-      return ontologyLoader.loadOntologyWithImports(ontologyFile);
+      var ontologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+      return Optional.of(ontologies);
     } catch (Exception e) {
       logger.info(
           "Skipping commit {} due to ontology load error: {}",
           commitMetadata.commitHash(),
           e.getMessage());
-      return null;
+      return Optional.empty();
     }
   }
 
