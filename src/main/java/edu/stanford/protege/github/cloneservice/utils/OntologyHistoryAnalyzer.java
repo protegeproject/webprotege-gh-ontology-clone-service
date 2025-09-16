@@ -74,11 +74,8 @@ public class OntologyHistoryAnalyzer {
           loadOntologiesWithErrorHandling(ontologyFile, childCommitMetadata);
 
       while (commitNavigator.hasParent()) {
-        // Trace back to previous commit
-        commitNavigator.pullParent();
-
-        // Get the previous commit metadata
-        var parentCommitMetadata = commitNavigator.getCurrentCommit();
+        // Get the parent commit metadata
+        var parentCommitMetadata = commitNavigator.pullParent();
 
         // Load ontologies at the previous commit
         var parentCommitOntologies =
