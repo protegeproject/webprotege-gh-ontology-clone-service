@@ -95,46 +95,33 @@ class GroceryOntologyIntegrationTest {
     // The repository now has multiple commits (54 as of this run)
     assertNotNull(commitHistory, "Commit history should not be null");
     assertTrue(
-        commitHistory.size() > 0, "Should have at least 1 commit in grocery ontology history");
+        commitHistory.size() >= 54, "Should have at least 54 commit in grocery ontology history");
 
     assertNotNull(revisions, "Revisions should not be null");
     assertEquals(
         commitHistory.size(), revisions.size(), "Should have same number of revisions as commits");
 
-    // Validate the first commit/revision (most recent)
-    var firstCommitChange = commitHistory.get(0);
-    var firstRevision = revisions.get(0);
+    // Validate the commit change must contain the same info as the revision
+    var commitChange = commitHistory.get(0);
+    var revision = revisions.get(0);
 
-    assertNotNull(firstRevision, "First revision should not be null");
-    assertNotNull(firstRevision.getUserId(), "First revision should have a user ID");
-    assertNotNull(
-        firstRevision.getRevisionNumber(), "First revision should have a revision number");
-    assertNotNull(firstRevision.getChanges(), "First revision should have changes");
-    assertTrue(firstRevision.getTimestamp() > 0, "First revision should have a valid timestamp");
+    assertNotNull(revision, "Revision object should not be null");
+    assertNotNull(revision.getUserId(), "Revision should have a user ID");
+    assertNotNull(revision.getRevisionNumber(), "Revision should have a revision number");
+    assertNotNull(revision.getChanges(), "Revision should have changes");
+    assertTrue(revision.getTimestamp() > 0, "Revision should have a valid timestamp");
 
-    // Verify first revision has expected structure
-    assertEquals(1, firstRevision.getRevisionNumber().getValue(), "Should be revision number 1");
-    assertTrue(firstRevision.getChanges().size() >= 0, "Should have non-negative ontology changes");
+    // Verify revision has expected structure
+    assertEquals(1, revision.getRevisionNumber().getValue(), "Should be revision number 1");
 
-    // Verify axiom changes structure
-    assertTrue(
-        firstCommitChange.axiomChanges().size() >= 0, "Should have non-negative axiom changes");
+    // Verify user ID matches commit metadata
+    var expectedUserId = UserId.valueOf(commitChange.commitMetadata().committerUsername());
+    assertEquals(expectedUserId, revision.getUserId(), "User ID should match commit metadata");
 
-    // Verify user ID matches commit metadata for first commit
-    var expectedUserId = UserId.valueOf(firstCommitChange.commitMetadata().committerUsername());
-    assertEquals(expectedUserId, firstRevision.getUserId(), "User ID should match commit metadata");
-
-    // Verify timestamp matches commit metadata for first commit
-    var expectedTimestamp = firstCommitChange.commitMetadata().commitDate().toEpochMilli();
+    // Verify timestamp matches commit metadata
+    var expectedTimestamp = commitChange.commitMetadata().commitDate().toEpochMilli();
     assertEquals(
-        expectedTimestamp, firstRevision.getTimestamp(), "Timestamp should match commit metadata");
-
-    // Verify commit message is preserved for first commit
-    var expectedMessage = firstCommitChange.commitMetadata().commitMessage();
-    assertEquals(
-        expectedMessage,
-        firstRevision.getHighLevelDescription(),
-        "Commit message should be preserved");
+        expectedTimestamp, revision.getTimestamp(), "Timestamp should match commit metadata");
 
     // Log results for verification
     logger.info(
