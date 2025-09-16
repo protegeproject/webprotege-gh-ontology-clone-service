@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
+import edu.stanford.protege.commitnavigator.config.RepositoryConfig;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,8 @@ class OntologyHistoryAnalyzerTest {
   @Mock private OntologyDifferenceCalculator differenceCalculator;
 
   @Mock private GitHubRepository gitHubRepository;
+
+  @Mock private RepositoryConfig repositoryConfig;
 
   @BeforeEach
   void setUp() {
@@ -80,7 +83,11 @@ class OntologyHistoryAnalyzerTest {
   void throwOntologyComparisonExceptionWhenRepositoryOperationsFail() throws Exception {
     var ontologyFile = new RelativeFilePath("test.owl");
 
-    // Simulate the repository throwing an exception during navigation
+    // Mock repository config
+    when(repositoryConfig.getRepositoryUrl()).thenReturn("https://github.com/test/repo.git");
+    when(gitHubRepository.getConfig()).thenReturn(repositoryConfig);
+
+    // Simulate the repository throwing an exception during commit navigator creation
     when(gitHubRepository.getCommitNavigator(any()))
         .thenThrow(new RuntimeException("Repository error"));
 

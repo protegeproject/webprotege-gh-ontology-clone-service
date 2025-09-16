@@ -35,6 +35,8 @@ class ChangeCommitToRevisionConverterTest {
 
   @Mock private OWLOntologyID ontologyId;
 
+  private static final String REPOSITORY_URL = "https://github.com/example/repo.git";
+
   @BeforeEach
   void setUp() {
     converter = new ChangeCommitToRevisionConverter();
@@ -56,7 +58,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -88,7 +91,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -117,7 +121,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -145,7 +150,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -169,7 +175,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result1 = converter.convert(ontologyCommitChange);
@@ -200,7 +207,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -226,7 +234,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);
@@ -253,7 +262,8 @@ class ChangeCommitToRevisionConverterTest {
     when(commitMetadata.commitMessage()).thenReturn(commitMessage);
     when(commitMetadata.commitDate()).thenReturn(commitDate);
 
-    var ontologyCommitChange = new OntologyCommitChange(axiomChanges, commitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(axiomChanges, commitMetadata, REPOSITORY_URL);
 
     // Act
     var result = converter.convert(ontologyCommitChange);

@@ -15,17 +15,20 @@ class OntologyCommitChangeTest {
 
   private List<AxiomChange> mockAxiomChanges;
   private CommitMetadata mockCommitMetadata;
+  private String mockRepositoryUrl;
 
   @BeforeEach
   void setUp() {
     mockAxiomChanges = List.of(mock(AxiomChange.class), mock(AxiomChange.class));
     mockCommitMetadata = mock(CommitMetadata.class);
+    mockRepositoryUrl = "https://github.com/example/repo.git";
   }
 
   @Test
   @DisplayName("Should create OntologyCommitChange with all required parameters")
   void createOntologyCommitChangeWhenAllParametersProvided() {
-    var ontologyCommitChange = new OntologyCommitChange(mockAxiomChanges, mockCommitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(mockAxiomChanges, mockCommitMetadata, mockRepositoryUrl);
 
     assertEquals(mockAxiomChanges, ontologyCommitChange.axiomChanges());
     assertEquals(mockCommitMetadata, ontologyCommitChange.commitMetadata());
@@ -36,7 +39,8 @@ class OntologyCommitChangeTest {
   void throwExceptionWhenAxiomChangesNull() {
     var exception =
         assertThrows(
-            NullPointerException.class, () -> new OntologyCommitChange(null, mockCommitMetadata));
+            NullPointerException.class,
+            () -> new OntologyCommitChange(null, mockCommitMetadata, mockRepositoryUrl));
 
     assertEquals("axiomChanges cannot be null", exception.getMessage());
   }
@@ -46,9 +50,21 @@ class OntologyCommitChangeTest {
   void throwExceptionWhenCommitMetadataNull() {
     var exception =
         assertThrows(
-            NullPointerException.class, () -> new OntologyCommitChange(mockAxiomChanges, null));
+            NullPointerException.class,
+            () -> new OntologyCommitChange(mockAxiomChanges, null, mockRepositoryUrl));
 
     assertEquals("commitMetadata cannot be null", exception.getMessage());
+  }
+
+  @Test
+  @DisplayName("Should throw NullPointerException when repositoryUrl is null")
+  void throwExceptionWhenRepositoryUrlNull() {
+    var exception =
+        assertThrows(
+            NullPointerException.class,
+            () -> new OntologyCommitChange(mockAxiomChanges, mockCommitMetadata, null));
+
+    assertEquals("repositoryUrl cannot be null", exception.getMessage());
   }
 
   @Test
@@ -56,7 +72,8 @@ class OntologyCommitChangeTest {
   void acceptEmptyAxiomChangesList() {
     var emptyAxiomChanges = List.<AxiomChange>of();
 
-    var ontologyCommitChange = new OntologyCommitChange(emptyAxiomChanges, mockCommitMetadata);
+    var ontologyCommitChange =
+        new OntologyCommitChange(emptyAxiomChanges, mockCommitMetadata, mockRepositoryUrl);
 
     assertEquals(emptyAxiomChanges, ontologyCommitChange.axiomChanges());
     assertTrue(ontologyCommitChange.axiomChanges().isEmpty());

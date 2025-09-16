@@ -55,6 +55,7 @@ public class OntologyHistoryAnalyzer {
     logger.info(
         "Starting ontology commit history analysis for ontology file: {}", ontologyFilePath);
 
+    var repositoryUrl = gitHubRepository.getConfig().getRepositoryUrl();
     var allCommitChanges = Lists.<OntologyCommitChange>newArrayList();
 
     try {
@@ -87,7 +88,8 @@ public class OntologyHistoryAnalyzer {
           var axiomChanges =
               calculateAxiomChangesBetweenOntologies(
                   childCommitOntologies.get(), parentCommitOntologies.get());
-          allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
+          allCommitChanges.add(
+              new OntologyCommitChange(axiomChanges, childCommitMetadata, repositoryUrl));
 
           // Swap the metadata and ontologies from parent commit to be the child commit
           childCommitOntologies = parentCommitOntologies;
@@ -98,7 +100,8 @@ public class OntologyHistoryAnalyzer {
       // Handle the initial commit
       if (childCommitOntologies.isPresent()) {
         var axiomChanges = calculateInitialOntologyChanges(childCommitOntologies.get());
-        allCommitChanges.add(new OntologyCommitChange(axiomChanges, childCommitMetadata));
+        allCommitChanges.add(
+            new OntologyCommitChange(axiomChanges, childCommitMetadata, repositoryUrl));
       }
 
       return ImmutableList.copyOf(allCommitChanges);

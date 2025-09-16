@@ -11,11 +11,14 @@ import javax.annotation.Nonnull;
  * commit metadata
  */
 public record OntologyCommitChange(
-    @Nonnull List<AxiomChange> axiomChanges, @Nonnull CommitMetadata commitMetadata) {
+    @Nonnull List<AxiomChange> axiomChanges,
+    @Nonnull CommitMetadata commitMetadata,
+    @Nonnull String repositoryUrl) {
 
   public OntologyCommitChange {
     Objects.requireNonNull(axiomChanges, "axiomChanges cannot be null");
     Objects.requireNonNull(commitMetadata, "commitMetadata cannot be null");
+    Objects.requireNonNull(repositoryUrl, "repositoryUrl cannot be null");
     // Create defensive copy to prevent external mutation
     axiomChanges = ImmutableList.copyOf(axiomChanges);
   }
