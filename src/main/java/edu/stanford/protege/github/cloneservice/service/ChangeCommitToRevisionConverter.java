@@ -1,6 +1,7 @@
 package edu.stanford.protege.github.cloneservice.service;
 
 import com.google.common.collect.ImmutableList;
+import edu.stanford.protege.commitnavigator.model.CommitMetadata;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.webprotege.change.AddAxiomChange;
@@ -30,6 +31,7 @@ public class ChangeCommitToRevisionConverter {
    */
   public Revision convert(OntologyCommitChange ontologyCommitChange) {
     var commitMetadata = ontologyCommitChange.commitMetadata();
+    var repositoryUrl = ontologyCommitChange.repositoryUrl();
     var userId = UserId.valueOf(commitMetadata.committerUsername());
     var revisionNumber = RevisionNumber.getRevisionNumber(orderNumber.getAndIncrement());
     var ontologyChanges =
@@ -37,7 +39,7 @@ public class ChangeCommitToRevisionConverter {
             .map(this::convertToOntologyChange)
             .collect(ImmutableList.toImmutableList());
     var commitTimestamp = commitMetadata.commitDate().toEpochMilli();
-    var commitMessage = commitMetadata.commitMessage();
+    var commitMessage = generateCommitMessage(commitMetadata, repositoryUrl);
     return new Revision(userId, revisionNumber, ontologyChanges, commitTimestamp, commitMessage);
   }
 
@@ -47,5 +49,16 @@ public class ChangeCommitToRevisionConverter {
       case ADD -> new AddAxiomChange(axiomChange.ontologyID(), axiomChange.axiom());
       case REMOVE -> new RemoveAxiomChange(axiomChange.ontologyID(), axiomChange.axiom());
     };
+  }
+
+  private String generateCommitMessage(CommitMetadata commitMetadata, String repositoryUrl) {
+    var message = """
+            **Commit** [%s](%s):
+            %s
+            """;
+    return message.formatted(
+        commitMetadata.commitHash(),
+        repositoryUrl + "/commit/" + commitMetadata.commitHash(),
+        commitMetadata.commitMessage());
   }
 }

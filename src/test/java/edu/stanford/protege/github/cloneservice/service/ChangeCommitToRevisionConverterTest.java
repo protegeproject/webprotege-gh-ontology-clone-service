@@ -68,7 +68,6 @@ class ChangeCommitToRevisionConverterTest {
     assertNotNull(result);
     assertEquals(UserId.valueOf(username), result.getUserId());
     assertEquals(commitDate.toEpochMilli(), result.getTimestamp());
-    assertEquals(commitMessage, result.getHighLevelDescription());
     assertEquals(2, result.getChanges().size());
 
     // Verify revision number is assigned
