@@ -3,7 +3,6 @@ package edu.stanford.protege.github.cloneservice.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.webprotege.common.BlobLocation;
@@ -23,7 +22,7 @@ class ProjectHistoryStorerTest {
 
   private ProjectHistoryStorer projectHistoryStorer;
 
-  @Mock private ChangeCommitToRevisionConverter commitToRevisionConverter;
+  @Mock private ProjectHistoryConverter projectHistoryConverter;
 
   @Mock private MinioProjectHistoryDocumentStorer projectHistoryDocumentStorer;
 
@@ -36,17 +35,19 @@ class ProjectHistoryStorerTest {
   @BeforeEach
   void setUp() {
     projectHistoryStorer =
-        new ProjectHistoryStorer(commitToRevisionConverter, projectHistoryDocumentStorer);
+        new ProjectHistoryStorer(projectHistoryConverter, projectHistoryDocumentStorer);
     testBlobLocation = new BlobLocation("test-bucket", "test-object");
   }
 
   @Test
-  @DisplayName("Convert all commit changes to revisions")
-  void convertAllCommitChangesToRevisions() {
+  @DisplayName("Store project history using ProjectHistoryConverter")
+  void storeProjectHistoryUsingProjectHistoryConverter() {
     // Arrange
     var projectHistory = List.of(commitChange1);
+    var revisions = List.of(revision1);
 
-    lenient().when(commitToRevisionConverter.convert(commitChange1)).thenReturn(revision1);
+    when(projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory))
+        .thenReturn(revisions);
     lenient().when(projectHistoryDocumentStorer.storeDocument(any())).thenReturn(testBlobLocation);
 
     // Act
@@ -55,11 +56,11 @@ class ProjectHistoryStorerTest {
 
       // Assert
       assertEquals(testBlobLocation, result);
-      verify(commitToRevisionConverter).convert(commitChange1);
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(projectHistory);
     } catch (Exception e) {
       // Expected due to serialization complexities in test environment
       // The important part is that conversion was called
-      verify(commitToRevisionConverter).convert(commitChange1);
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(projectHistory);
     }
   }
 
@@ -68,6 +69,10 @@ class ProjectHistoryStorerTest {
   void handleEmptyProjectHistory() {
     // Arrange
     var emptyProjectHistory = List.<OntologyCommitChange>of();
+    var emptyRevisions = List.<Revision>of();
+
+    when(projectHistoryConverter.convertProjectHistoryToRevisions(emptyProjectHistory))
+        .thenReturn(emptyRevisions);
     when(projectHistoryDocumentStorer.storeDocument(any())).thenReturn(testBlobLocation);
 
     // Act
@@ -76,11 +81,11 @@ class ProjectHistoryStorerTest {
 
       // Assert
       assertEquals(testBlobLocation, result);
-      verify(commitToRevisionConverter, never()).convert(any());
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(emptyProjectHistory);
     } catch (Exception e) {
       // Expected due to serialization complexities in test environment
-      // The important part is that no conversions were called for empty list
-      verify(commitToRevisionConverter, never()).convert(any());
+      // The important part is that conversion was called for empty list
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(emptyProjectHistory);
     }
   }
 
@@ -89,8 +94,10 @@ class ProjectHistoryStorerTest {
   void handleSingleCommitChange() {
     // Arrange
     var projectHistory = List.of(commitChange1);
+    var revisions = List.of(revision1);
 
-    lenient().when(commitToRevisionConverter.convert(commitChange1)).thenReturn(revision1);
+    when(projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory))
+        .thenReturn(revisions);
     lenient().when(projectHistoryDocumentStorer.storeDocument(any())).thenReturn(testBlobLocation);
 
     // Act
@@ -99,11 +106,11 @@ class ProjectHistoryStorerTest {
 
       // Assert
       assertEquals(testBlobLocation, result);
-      verify(commitToRevisionConverter, times(1)).convert(commitChange1);
+      verify(projectHistoryConverter, times(1)).convertProjectHistoryToRevisions(projectHistory);
     } catch (Exception e) {
       // Expected due to serialization complexities in test environment
       // The important part is that conversion was called once
-      verify(commitToRevisionConverter, times(1)).convert(commitChange1);
+      verify(projectHistoryConverter, times(1)).convertProjectHistoryToRevisions(projectHistory);
     }
   }
 
@@ -112,7 +119,10 @@ class ProjectHistoryStorerTest {
   void callMinioStorerWithDocumentPath() {
     // Arrange
     var projectHistory = List.of(commitChange1);
-    lenient().when(commitToRevisionConverter.convert(commitChange1)).thenReturn(revision1);
+    var revisions = List.of(revision1);
+
+    when(projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory))
+        .thenReturn(revisions);
     lenient().when(projectHistoryDocumentStorer.storeDocument(any())).thenReturn(testBlobLocation);
 
     // Act
@@ -129,12 +139,14 @@ class ProjectHistoryStorerTest {
   }
 
   @Test
-  @DisplayName("Process commit changes in correct order")
-  void processCommitChangesInCorrectOrder() {
+  @DisplayName("Delegate conversion to ProjectHistoryConverter")
+  void delegateConversionToProjectHistoryConverter() {
     // Arrange
     var projectHistory = List.of(commitChange1);
+    var revisions = List.of(revision1);
 
-    lenient().when(commitToRevisionConverter.convert(commitChange1)).thenReturn(revision1);
+    when(projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory))
+        .thenReturn(revisions);
     lenient().when(projectHistoryDocumentStorer.storeDocument(any())).thenReturn(testBlobLocation);
 
     // Act
@@ -142,11 +154,35 @@ class ProjectHistoryStorerTest {
       projectHistoryStorer.storeProjectHistory(projectHistory);
 
       // Assert
-      verify(commitToRevisionConverter).convert(commitChange1);
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(projectHistory);
     } catch (Exception e) {
       // Expected due to serialization complexities in test environment
-      // The important part is that conversion was called
-      verify(commitToRevisionConverter).convert(commitChange1);
+      // The important part is that conversion was delegated
+      verify(projectHistoryConverter).convertProjectHistoryToRevisions(projectHistory);
     }
+  }
+
+  @Test
+  @DisplayName("Handle null ProjectHistoryConverter in constructor")
+  void handleNullProjectHistoryConverterInConstructor() {
+    // Given
+    ProjectHistoryConverter nullConverter = null;
+
+    // When & Then
+    assertThrows(
+        NullPointerException.class,
+        () -> new ProjectHistoryStorer(nullConverter, projectHistoryDocumentStorer));
+  }
+
+  @Test
+  @DisplayName("Handle null MinioProjectHistoryDocumentStorer in constructor")
+  void handleNullMinioProjectHistoryDocumentStorerInConstructor() {
+    // Given
+    MinioProjectHistoryDocumentStorer nullStorer = null;
+
+    // When & Then
+    assertThrows(
+        NullPointerException.class,
+        () -> new ProjectHistoryStorer(projectHistoryConverter, nullStorer));
   }
 }

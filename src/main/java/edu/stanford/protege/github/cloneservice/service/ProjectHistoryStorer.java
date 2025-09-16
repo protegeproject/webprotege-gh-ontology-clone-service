@@ -8,23 +8,25 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectHistoryStorer {
 
-  private final ChangeCommitToRevisionConverter changeCommitToRevisionConverter;
+  private final ProjectHistoryConverter projectHistoryConverter;
   private final MinioProjectHistoryDocumentStorer minioProjectHistoryDocumentStorer;
 
   public ProjectHistoryStorer(
-      @Nonnull ChangeCommitToRevisionConverter changeCommitToRevisionConverter,
+      @Nonnull ProjectHistoryConverter projectHistoryConverter,
       @Nonnull MinioProjectHistoryDocumentStorer minioProjectHistoryDocumentStorer) {
-    this.changeCommitToRevisionConverter = changeCommitToRevisionConverter;
-    this.minioProjectHistoryDocumentStorer = minioProjectHistoryDocumentStorer;
+    this.projectHistoryConverter =
+        Objects.requireNonNull(projectHistoryConverter, "projectHistoryConverter cannot be null");
+    this.minioProjectHistoryDocumentStorer =
+        Objects.requireNonNull(
+            minioProjectHistoryDocumentStorer, "minioProjectHistoryDocumentStorer cannot be null");
   }
 
   /**
@@ -44,12 +46,8 @@ public class ProjectHistoryStorer {
   public BlobLocation storeProjectHistory(List<OntologyCommitChange> projectHistory) {
     try {
       var tempFile = Files.createTempFile("webprotege-", "-clone-project-history.bin");
-      // Reverse the order to have the oldest changes as the first revision
-      var reversedHistory = new ArrayList<>(projectHistory);
-      Collections.reverse(reversedHistory);
-      reversedHistory.stream()
-          .map(changeCommitToRevisionConverter::convert)
-          .forEach(revision -> serialize(revision, tempFile));
+      var revisions = projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory);
+      revisions.forEach(revision -> serialize(revision, tempFile));
       var location = minioProjectHistoryDocumentStorer.storeDocument(tempFile);
       Files.delete(tempFile);
       return location;

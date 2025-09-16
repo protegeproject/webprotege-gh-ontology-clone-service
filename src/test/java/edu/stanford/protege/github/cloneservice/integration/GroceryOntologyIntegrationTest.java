@@ -7,6 +7,7 @@ import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.service.ChangeCommitToRevisionConverter;
+import edu.stanford.protege.github.cloneservice.service.ProjectHistoryConverter;
 import edu.stanford.protege.github.cloneservice.utils.OntologyDifferenceCalculator;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.github.cloneservice.utils.OntologyLoader;
@@ -27,13 +28,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Integration test that coordinates with the grocery-ontology GitHub repository, gets the project
- * history, and tests the ChangeCommitToRevisionConverter.
+ * history, and tests the ProjectHistoryConverter with proper ordering logic.
  *
  * <p>This test uses real GitHub repository coordination and hardcoded expected results from actual
- * runs. External dependencies that could be mocked for faster/more reliable testing: - Network
- * access to GitHub (but task specifically requires real coordination) - File system operations
- * (handled by GitHubRepository implementation) - OWL API ontology loading (tested through real
- * files)
+ * runs. It tests the complete conversion pipeline including the critical ordering logic where
+ * project history items (newest to oldest) are converted to revisions (oldest to newest). External
+ * dependencies that could be mocked for faster/more reliable testing: - Network access to GitHub
+ * (but task specifically requires real coordination) - File system operations (handled by
+ * GitHubRepository implementation) - OWL API ontology loading (tested through real files)
  *
  * <p>The test maintains a balance between integration testing with real dependencies and
  * predictable results through hardcoded expectations based on the known state of the
@@ -51,7 +53,7 @@ class GroceryOntologyIntegrationTest {
   private static final RelativeFilePath ONTOLOGY_FILE_PATH = new RelativeFilePath("grocery.owl");
 
   private OntologyHistoryAnalyzer historyAnalyzer;
-  private ChangeCommitToRevisionConverter revisionConverter;
+  private ProjectHistoryConverter projectHistoryConverter;
   private String cloneDirectory;
 
   @BeforeEach
@@ -60,7 +62,10 @@ class GroceryOntologyIntegrationTest {
     var ontologyLoader = new OntologyLoader(ontologyManagerProvider);
     var differenceCalculator = new OntologyDifferenceCalculator();
     historyAnalyzer = new OntologyHistoryAnalyzer(ontologyLoader, differenceCalculator);
-    revisionConverter = new ChangeCommitToRevisionConverter();
+
+    // Use the new ProjectHistoryConverter which includes the ordering logic
+    var changeCommitToRevisionConverter = new ChangeCommitToRevisionConverter();
+    projectHistoryConverter = new ProjectHistoryConverter(changeCommitToRevisionConverter);
     cloneDirectory = null;
   }
 
@@ -90,7 +95,7 @@ class GroceryOntologyIntegrationTest {
     var commitHistory = historyAnalyzer.getCommitHistory(ONTOLOGY_FILE_PATH, gitHubRepository);
 
     logger.info("Converting {} commit changes to revisions", commitHistory.size());
-    var revisions = commitHistory.stream().map(revisionConverter::convert).toList();
+    var revisions = projectHistoryConverter.convertProjectHistoryToRevisions(commitHistory);
 
     // Assert - Based on hardcoded expected results from actual run
     // Updated expected results from running against grocery-ontology as of 2025-08-26:
@@ -103,31 +108,68 @@ class GroceryOntologyIntegrationTest {
     assertEquals(
         commitHistory.size(), revisions.size(), "Should have same number of revisions as commits");
 
-    // Validate the commit change must contain the same info as the revision
-    var commitChange = commitHistory.get(0);
-    var revision = revisions.get(0);
+    // Verify basic revision structure
+    var firstRevision = revisions.get(0);
+    assertNotNull(firstRevision, "First revision object should not be null");
+    assertNotNull(firstRevision.getUserId(), "First revision should have a user ID");
+    assertNotNull(
+        firstRevision.getRevisionNumber(), "First revision should have a revision number");
+    assertNotNull(firstRevision.getChanges(), "First revision should have changes");
+    assertTrue(firstRevision.getTimestamp() > 0, "First revision should have a valid timestamp");
 
-    assertNotNull(revision, "Revision object should not be null");
-    assertNotNull(revision.getUserId(), "Revision should have a user ID");
-    assertNotNull(revision.getRevisionNumber(), "Revision should have a revision number");
-    assertNotNull(revision.getChanges(), "Revision should have changes");
-    assertTrue(revision.getTimestamp() > 0, "Revision should have a valid timestamp");
-
-    // Verify revision has expected structure
-    assertEquals(1, revision.getRevisionNumber().getValue(), "Should be revision number 1");
-
-    // Verify user ID matches commit metadata
-    var expectedUserId = UserId.valueOf(commitChange.commitMetadata().committerUsername());
-    assertEquals(expectedUserId, revision.getUserId(), "User ID should match commit metadata");
-
-    // Verify timestamp matches commit metadata
-    var expectedTimestamp = commitChange.commitMetadata().commitDate().toEpochMilli();
+    // Verify revision has expected structure - should be revision number 1 (oldest commit first)
     assertEquals(
-        expectedTimestamp, revision.getTimestamp(), "Timestamp should match commit metadata");
+        1,
+        firstRevision.getRevisionNumber().getValue(),
+        "First revision should be revision number 1");
+
+    // Verify ordering logic: the last project history item (oldest commit) becomes first revision
+    if (commitHistory.size() > 1) {
+      var lastCommitChange = commitHistory.get(commitHistory.size() - 1); // oldest commit
+      var lastRevision = revisions.get(revisions.size() - 1); // should be highest revision number
+
+      assertEquals(
+          1,
+          firstRevision.getRevisionNumber().getValue(),
+          "First revision should be revision number 1 (oldest commit)");
+      assertEquals(
+          commitHistory.size(),
+          lastRevision.getRevisionNumber().getValue(),
+          "Last revision should have highest revision number (newest commit)");
+
+      // Verify that the oldest commit (last in history) becomes the first revision
+      var expectedFirstUserId =
+          UserId.valueOf(lastCommitChange.commitMetadata().committerUsername());
+      assertEquals(
+          expectedFirstUserId,
+          firstRevision.getUserId(),
+          "First revision should correspond to oldest commit (last project history item)");
+
+      // Verify that the newest commit (first in history) becomes the last revision
+      var newestCommitChange = commitHistory.get(0); // newest commit
+      var expectedLastUserId =
+          UserId.valueOf(newestCommitChange.commitMetadata().committerUsername());
+      assertEquals(
+          expectedLastUserId,
+          lastRevision.getUserId(),
+          "Last revision should correspond to newest commit (first project history item)");
+
+      // Verify timestamps match for the correct corresponding pairs
+      var expectedFirstTimestamp = lastCommitChange.commitMetadata().commitDate().toEpochMilli();
+      assertEquals(
+          expectedFirstTimestamp,
+          firstRevision.getTimestamp(),
+          "First revision timestamp should match oldest commit metadata");
+
+      logger.info(
+          "Verified ordering: {} project history items converted to {} revisions with correct order",
+          commitHistory.size(),
+          revisions.size());
+    }
 
     // Log results for verification
     logger.info(
-        "Successfully processed {} commits into {} revisions",
+        "Successfully processed {} commits into {} revisions using ProjectHistoryConverter",
         commitHistory.size(),
         revisions.size());
     logRevisionSummary(revisions);
@@ -180,7 +222,7 @@ class GroceryOntologyIntegrationTest {
 
     // Act
     var commitHistory = historyAnalyzer.getCommitHistory(ONTOLOGY_FILE_PATH, gitHubRepository);
-    var revisions = commitHistory.stream().map(revisionConverter::convert).toList();
+    var revisions = projectHistoryConverter.convertProjectHistoryToRevisions(commitHistory);
 
     // Assert - Validate ontology change conversion with updated expectations
     assertNotNull(revisions, "Revisions should not be null");
@@ -190,14 +232,20 @@ class GroceryOntologyIntegrationTest {
         "Should have converted same number of revisions as commits");
 
     // Verify each revision has properly converted changes
+    // Note: Due to ordering logic, we need to compare with the reversed index
     for (int i = 0; i < revisions.size(); i++) {
       var revision = revisions.get(i);
-      var commitChange = commitHistory.get(i);
+      var correspondingCommitIndex = commitHistory.size() - 1 - i; // Reverse index
+      var commitChange = commitHistory.get(correspondingCommitIndex);
 
       assertEquals(
           commitChange.axiomChanges().size(),
           revision.getChanges().size(),
-          "Revision " + i + " should have same number of changes as commit");
+          "Revision "
+              + i
+              + " should have same number of changes as corresponding commit (index "
+              + correspondingCommitIndex
+              + ")");
     }
 
     // Verify total counts match
