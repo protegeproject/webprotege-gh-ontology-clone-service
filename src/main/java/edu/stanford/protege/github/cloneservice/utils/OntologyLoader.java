@@ -11,28 +11,22 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.protege.xmlcatalog.owlapi.XMLCatalogIRIMapper;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory;
-import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxOntologyParserFactory;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.oboformat.OBOFormatOWLAPIParserFactory;
-import org.semanticweb.owlapi.owlxml.parser.OWLXMLParserFactory;
-import org.semanticweb.owlapi.rdf.rdfxml.parser.RDFXMLParserFactory;
-import org.semanticweb.owlapi.rdf.turtle.parser.TurtleOntologyParserFactory;
-import org.semanticweb.owlapi.rio.*;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-import uk.ac.manchester.cs.owl.owlapi.OWLOntologyFactoryImpl;
-import uk.ac.manchester.cs.owl.owlapi.OWLOntologyManagerImpl;
-import uk.ac.manchester.cs.owl.owlapi.concurrent.NoOpReadWriteLock;
-import uk.ac.manchester.cs.owl.owlapi.concurrent.NonConcurrentOWLOntologyBuilder;
 
 /** Handles loading of ontology files using OWL-API */
 @Component
 public class OntologyLoader {
+
+  private final OntologyManagerProvider ontologyManagerProvider;
+
+  public OntologyLoader(@Nonnull OntologyManagerProvider ontologyManagerProvider) {
+    this.ontologyManagerProvider =
+        Objects.requireNonNull(ontologyManagerProvider, "ontologyManagerProvider cannot be null");
+  }
 
   private static final Logger logger = LoggerFactory.getLogger(OntologyLoader.class);
 
@@ -43,7 +37,7 @@ public class OntologyLoader {
    */
   @Nonnull
   public OWLOntology createEmptyOntology() {
-    var ontologyManager = OWLManager.createOWLOntologyManager();
+    var ontologyManager = ontologyManagerProvider.getEmptyOntologyManager();
     try {
       return ontologyManager.createOntology();
     } catch (OWLOntologyCreationException e) {
@@ -81,7 +75,7 @@ public class OntologyLoader {
       throw new FileNotFoundException(message);
     }
 
-    var ontologyManager = getOntologyManager();
+    var ontologyManager = ontologyManagerProvider.getOntologyManager();
 
     // Add IRI mapper for local imports in the same directory
     ontologyManager.getIRIMappers().clear();
@@ -136,40 +130,5 @@ public class OntologyLoader {
       logger.warn("Failed to list files in directory: {}", directory, e);
       return Optional.empty();
     }
-  }
-
-  private OWLOntologyManager getOntologyManager() {
-    var man =
-        new OWLOntologyManagerImpl(new OWLDataFactoryImpl(), new NoOpReadWriteLock()) {
-          @Override
-          public void makeLoadImportRequest(
-              OWLImportsDeclaration declaration, OWLOntologyLoaderConfiguration configuration) {
-            var config = getOntologyLoaderConfiguration();
-            super.makeLoadImportRequest(declaration, config);
-          }
-        };
-    man.getOntologyFactories()
-        .add(new OWLOntologyFactoryImpl(new NonConcurrentOWLOntologyBuilder()));
-
-    // Add parsers that we care about
-    var ontologyParsers = man.getOntologyParsers();
-    ontologyParsers.add(new RioBinaryRdfParserFactory());
-    ontologyParsers.add(new RioNQuadsParserFactory());
-    ontologyParsers.add(new RioJsonLDParserFactory());
-    ontologyParsers.add(new RioNTriplesParserFactory());
-    ontologyParsers.add(new OBOFormatOWLAPIParserFactory());
-    ontologyParsers.add(new OWLFunctionalSyntaxOWLParserFactory());
-    ontologyParsers.add(new ManchesterOWLSyntaxOntologyParserFactory());
-    ontologyParsers.add(new TurtleOntologyParserFactory());
-    ontologyParsers.add(new OWLXMLParserFactory());
-    ontologyParsers.add(new RDFXMLParserFactory());
-
-    // Configure silent handling of missing/anonymous imports
-    var config =
-        new OWLOntologyLoaderConfiguration()
-            .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-    man.setOntologyLoaderConfiguration(config);
-
-    return man;
   }
 }

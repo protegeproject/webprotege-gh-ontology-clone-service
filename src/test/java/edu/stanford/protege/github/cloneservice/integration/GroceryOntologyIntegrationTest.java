@@ -10,6 +10,7 @@ import edu.stanford.protege.github.cloneservice.service.ChangeCommitToRevisionCo
 import edu.stanford.protege.github.cloneservice.utils.OntologyDifferenceCalculator;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.github.cloneservice.utils.OntologyLoader;
+import edu.stanford.protege.github.cloneservice.utils.OntologyManagerProvider;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.revision.Revision;
 import java.io.IOException;
@@ -55,7 +56,8 @@ class GroceryOntologyIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    var ontologyLoader = new OntologyLoader();
+    var ontologyManagerProvider = new OntologyManagerProvider();
+    var ontologyLoader = new OntologyLoader(ontologyManagerProvider);
     var differenceCalculator = new OntologyDifferenceCalculator();
     historyAnalyzer = new OntologyHistoryAnalyzer(ontologyLoader, differenceCalculator);
     revisionConverter = new ChangeCommitToRevisionConverter();

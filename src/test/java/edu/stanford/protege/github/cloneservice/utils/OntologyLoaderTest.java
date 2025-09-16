@@ -21,7 +21,8 @@ class OntologyLoaderTest {
 
   @BeforeEach
   void setUp() {
-    ontologyLoader = new OntologyLoader();
+    var ontologyManagerProvider = new OntologyManagerProvider();
+    ontologyLoader = new OntologyLoader(ontologyManagerProvider);
   }
 
   @Test
