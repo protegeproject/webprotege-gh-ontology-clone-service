@@ -12,11 +12,14 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.protege.xmlcatalog.owlapi.XMLCatalogIRIMapper;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory;
+import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxOntologyParserFactory;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.oboformat.OBOFormatOWLAPIParserFactory;
 import org.semanticweb.owlapi.owlxml.parser.OWLXMLParserFactory;
 import org.semanticweb.owlapi.rdf.rdfxml.parser.RDFXMLParserFactory;
 import org.semanticweb.owlapi.rdf.turtle.parser.TurtleOntologyParserFactory;
+import org.semanticweb.owlapi.rio.*;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,10 +153,16 @@ public class OntologyLoader {
 
     // Add parsers that we care about
     var ontologyParsers = man.getOntologyParsers();
+    ontologyParsers.add(new RioBinaryRdfParserFactory());
+    ontologyParsers.add(new RioNQuadsParserFactory());
+    ontologyParsers.add(new RioJsonLDParserFactory());
+    ontologyParsers.add(new RioNTriplesParserFactory());
     ontologyParsers.add(new OBOFormatOWLAPIParserFactory());
-    ontologyParsers.add(new RDFXMLParserFactory());
-    ontologyParsers.add(new OWLXMLParserFactory());
+    ontologyParsers.add(new OWLFunctionalSyntaxOWLParserFactory());
+    ontologyParsers.add(new ManchesterOWLSyntaxOntologyParserFactory());
     ontologyParsers.add(new TurtleOntologyParserFactory());
+    ontologyParsers.add(new OWLXMLParserFactory());
+    ontologyParsers.add(new RDFXMLParserFactory());
 
     // Configure silent handling of missing/anonymous imports
     var config =
