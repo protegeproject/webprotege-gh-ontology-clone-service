@@ -133,7 +133,7 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>github-commit-navigator</artifactId>
-            <version>1.0.0</version>
+            <version>1.2.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
