@@ -26,7 +26,35 @@ public class OntologyManagerProvider {
     return OWLManager.createOWLOntologyManager();
   }
 
-  public OWLOntologyManager getOntologyManager() {
+  public OWLOntologyManager getOntologyManagerWithLoadImports() {
+    var man = getCustomOntologyManager();
+
+    // Configure silent handling of missing/anonymous imports
+    var config =
+        new OWLOntologyLoaderConfiguration()
+            .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+    man.setOntologyLoaderConfiguration(config);
+
+    return man;
+  }
+
+  public OWLOntologyManager getOntologyManagerWithIgnoredImports() {
+    var man = getCustomOntologyManager();
+
+    // Configure silent handling of missing/anonymous imports
+    var config =
+        new OWLOntologyLoaderConfiguration() {
+          @Override
+          public boolean isIgnoredImport(IRI iri) {
+            return true;
+          }
+        };
+    man.setOntologyLoaderConfiguration(config);
+
+    return man;
+  }
+
+  private OWLOntologyManager getCustomOntologyManager() {
     var man =
         new OWLOntologyManagerImpl(new OWLDataFactoryImpl(), new NoOpReadWriteLock()) {
           @Override
@@ -51,12 +79,6 @@ public class OntologyManagerProvider {
     ontologyParsers.add(new TurtleOntologyParserFactory());
     ontologyParsers.add(new OWLXMLParserFactory());
     ontologyParsers.add(new RDFXMLParserFactory());
-
-    // Configure silent handling of missing/anonymous imports
-    var config =
-        new OWLOntologyLoaderConfiguration()
-            .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-    man.setOntologyLoaderConfiguration(config);
 
     return man;
   }

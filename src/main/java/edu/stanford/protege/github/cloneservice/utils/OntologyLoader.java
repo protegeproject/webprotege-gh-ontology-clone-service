@@ -75,7 +75,7 @@ public class OntologyLoader {
       throw new FileNotFoundException(message);
     }
 
-    var ontologyManager = ontologyManagerProvider.getOntologyManager();
+    var ontologyManager = ontologyManagerProvider.getOntologyManagerWithLoadImports();
 
     // Add IRI mapper for local imports in the same directory
     ontologyManager.getIRIMappers().clear();

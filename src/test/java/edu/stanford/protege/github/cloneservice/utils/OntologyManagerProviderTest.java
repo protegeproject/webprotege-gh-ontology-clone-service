@@ -53,7 +53,7 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should create configured ontology manager successfully")
   void createConfiguredOntologyManagerSuccessfully() {
-    var manager = provider.getOntologyManager();
+    var manager = provider.getOntologyManagerWithLoadImports();
 
     assertNotNull(manager, "Configured ontology manager should not be null");
     assertNotNull(manager.getOWLDataFactory(), "Data factory should not be null");
@@ -63,8 +63,8 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should create different instances of configured ontology manager")
   void createDifferentInstancesOfConfiguredOntologyManager() {
-    var manager1 = provider.getOntologyManager();
-    var manager2 = provider.getOntologyManager();
+    var manager1 = provider.getOntologyManagerWithLoadImports();
+    var manager2 = provider.getOntologyManagerWithLoadImports();
 
     assertNotNull(manager1, "First manager should not be null");
     assertNotNull(manager2, "Second manager should not be null");
@@ -74,7 +74,7 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should configure ontology manager with expected parsers")
   void configureOntologyManagerWithExpectedParsers() {
-    var manager = provider.getOntologyManager();
+    var manager = provider.getOntologyManagerWithLoadImports();
     var parsers = manager.getOntologyParsers();
 
     assertNotNull(parsers, "Parsers collection should not be null");
@@ -120,7 +120,7 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should configure ontology manager with custom ontology factory")
   void configureOntologyManagerWithCustomOntologyFactory() {
-    var manager = provider.getOntologyManager();
+    var manager = provider.getOntologyManagerWithLoadImports();
     var factories = manager.getOntologyFactories();
 
     assertNotNull(factories, "Factories collection should not be null");
@@ -141,7 +141,7 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should configure ontology manager with silent import handling")
   void configureOntologyManagerWithSilentImportHandling() {
-    var manager = provider.getOntologyManager();
+    var manager = provider.getOntologyManagerWithLoadImports();
     var config = manager.getOntologyLoaderConfiguration();
 
     assertNotNull(config, "Loader configuration should not be null");
@@ -166,7 +166,7 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should allow creation of ontologies with configured manager")
   void allowCreationOfOntologiesWithConfiguredManager() throws Exception {
-    var manager = provider.getOntologyManager();
+    var manager = provider.getOntologyManagerWithLoadImports();
 
     var ontology = manager.createOntology();
 
@@ -178,8 +178,8 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should maintain independent state between manager instances")
   void maintainIndependentStateBetweenManagerInstances() throws Exception {
-    var manager1 = provider.getOntologyManager();
-    var manager2 = provider.getOntologyManager();
+    var manager1 = provider.getOntologyManagerWithLoadImports();
+    var manager2 = provider.getOntologyManagerWithLoadImports();
 
     // Create ontology in first manager
     var ontology1 = manager1.createOntology();
@@ -193,8 +193,8 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should have consistent parser count across manager instances")
   void haveConsistentParserCountAcrossManagerInstances() {
-    var manager1 = provider.getOntologyManager();
-    var manager2 = provider.getOntologyManager();
+    var manager1 = provider.getOntologyManagerWithLoadImports();
+    var manager2 = provider.getOntologyManagerWithLoadImports();
 
     var parsers1 = manager1.getOntologyParsers();
     var parsers2 = manager2.getOntologyParsers();
@@ -209,8 +209,8 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should have consistent factory count across manager instances")
   void haveConsistentFactoryCountAcrossManagerInstances() {
-    var manager1 = provider.getOntologyManager();
-    var manager2 = provider.getOntologyManager();
+    var manager1 = provider.getOntologyManagerWithLoadImports();
+    var manager2 = provider.getOntologyManagerWithLoadImports();
 
     var factories1 = manager1.getOntologyFactories();
     var factories2 = manager2.getOntologyFactories();
@@ -227,8 +227,8 @@ class OntologyManagerProviderTest {
   @Test
   @DisplayName("Should have consistent configuration across manager instances")
   void haveConsistentConfigurationAcrossManagerInstances() {
-    var manager1 = provider.getOntologyManager();
-    var manager2 = provider.getOntologyManager();
+    var manager1 = provider.getOntologyManagerWithLoadImports();
+    var manager2 = provider.getOntologyManagerWithLoadImports();
 
     var config1 = manager1.getOntologyLoaderConfiguration();
     var config2 = manager2.getOntologyLoaderConfiguration();
