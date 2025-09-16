@@ -21,7 +21,7 @@ class OntologyCommitChangeTest {
   void setUp() {
     mockAxiomChanges = List.of(mock(AxiomChange.class), mock(AxiomChange.class));
     mockCommitMetadata = mock(CommitMetadata.class);
-    mockRepositoryUrl = "https://github.com/example/repo.git";
+    mockRepositoryUrl = "https://github.com/example/repo";
   }
 
   @Test

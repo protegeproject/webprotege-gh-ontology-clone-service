@@ -35,7 +35,7 @@ class ChangeCommitToRevisionConverterTest {
 
   @Mock private OWLOntologyID ontologyId;
 
-  private static final String REPOSITORY_URL = "https://github.com/example/repo.git";
+  private static final String REPOSITORY_URL = "https://github.com/example/repo";
 
   @BeforeEach
   void setUp() {
