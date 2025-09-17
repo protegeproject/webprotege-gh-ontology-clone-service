@@ -312,7 +312,7 @@ class GroceryOntologyIntegrationTest {
 
     var repository =
         GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
-            .localCloneDirectory(cloneDirectory)
+            .localWorkingDirectory(cloneDirectory)
             .build();
     repository.initialize();
     return repository;

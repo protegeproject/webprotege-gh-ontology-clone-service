@@ -2,8 +2,8 @@ package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import edu.stanford.protege.commitnavigator.CommitNavigatorBuilder;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
-import edu.stanford.protege.commitnavigator.config.CommitNavigatorConfig;
 import edu.stanford.protege.commitnavigator.model.CommitMetadata;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
 import edu.stanford.protege.github.cloneservice.model.AxiomChange;
@@ -59,11 +59,15 @@ public class OntologyHistoryAnalyzer {
     var allCommitChanges = Lists.<OntologyCommitChange>newArrayList();
 
     try {
+      // Get the working directory from the repository
+      var workingDirectory = gitHubRepository.getWorkingDirectory();
+
       // Configure commit navigator to focus on the target ontology file
       var targetOntologyFile = ontologyFilePath.asString();
-      var commitNavigatorConfig =
-          CommitNavigatorConfig.builder().fileFilters(targetOntologyFile).build();
-      var commitNavigator = gitHubRepository.getCommitNavigator(commitNavigatorConfig);
+      var commitNavigator =
+          CommitNavigatorBuilder.forWorkingDirectory(workingDirectory)
+              .fileFilters("*.owl", "*.obo")
+              .build();
 
       // Resolve the absolute path to the ontology file in the local clone
       var ontologyFile = commitNavigator.resolveFilePath(targetOntologyFile);
@@ -75,7 +79,7 @@ public class OntologyHistoryAnalyzer {
 
       while (commitNavigator.hasParent()) {
         // Get the parent commit metadata
-        var parentCommitMetadata = commitNavigator.pullParent();
+        var parentCommitMetadata = commitNavigator.checkoutParent();
 
         // Load ontologies at the previous commit
         var parentCommitOntologies =

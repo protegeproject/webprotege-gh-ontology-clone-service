@@ -83,7 +83,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -121,7 +122,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act & Assert
@@ -161,7 +163,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act & Assert
@@ -199,7 +202,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -234,7 +238,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -274,7 +279,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act
@@ -311,7 +317,8 @@ class ProjectHistoryGeneratorTest {
                   edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
                       repositoryCoordinates))
           .thenReturn(mockBuilder);
-      when(mockBuilder.localCloneDirectory(any(java.nio.file.Path.class))).thenReturn(mockBuilder);
+      when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
+          .thenReturn(mockBuilder);
       when(mockBuilder.build()).thenReturn(gitHubRepository);
 
       // Act

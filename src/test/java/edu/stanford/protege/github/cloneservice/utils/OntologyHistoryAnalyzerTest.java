@@ -87,8 +87,8 @@ class OntologyHistoryAnalyzerTest {
     when(repositoryConfig.getRepositoryUrl()).thenReturn("https://github.com/test/repo.git");
     when(gitHubRepository.getConfig()).thenReturn(repositoryConfig);
 
-    // Simulate the repository throwing an exception during commit navigator creation
-    when(gitHubRepository.getCommitNavigator(any()))
+    // Simulate the repository throwing an exception during working directory access
+    when(gitHubRepository.getWorkingDirectory())
         .thenThrow(new RuntimeException("Repository error"));
 
     var exception =
