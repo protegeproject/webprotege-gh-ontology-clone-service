@@ -1,6 +1,7 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import edu.stanford.protege.github.cloneservice.exception.OntologyLoadException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,37 +63,39 @@ public class OntologyLoader {
    * @param filePath the path to the ontology file to load.
    * @return a list containing the main ontology and all its imported ontologies. The main ontology
    *     is always the first element. Returns an empty list if the file does not exist.
-   * @throws NullPointerException if {@code filePath} is {@code null}
+   * @throws OntologyLoadException if {@code filePath} is {@code null} or doesn't exist, The catalog
+   *     file is invalid, or ontology failed to load.
    */
   @Nonnull
-  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath) throws IOException {
+  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath)
+      throws OntologyLoadException {
     Objects.requireNonNull(filePath, "filePath cannot be null");
-
-    var ontologyFile = filePath.toFile();
-    if (!ontologyFile.exists()) {
-      var message = "Ontology file does not exist: " + filePath;
-      logger.error(message);
-      throw new FileNotFoundException(message);
-    }
-
-    var ontologyManager = ontologyManagerProvider.getOntologyManagerWithLoadImports();
-
-    // Add IRI mapper for local imports in the same directory
-    ontologyManager.getIRIMappers().clear();
-    var parentDir = filePath.getParent();
-    if (parentDir != null) {
-      var catalogFile = findCatalogFile(parentDir);
-      if (catalogFile.isPresent()) {
-        var newMapper = new XMLCatalogIRIMapper(catalogFile.get().toFile());
-        ontologyManager.getIRIMappers().add(newMapper);
-        logger.debug("Using XMLCatalogIRIMapper with catalog file: {}", catalogFile.get());
-      } else {
-        var newMapper = new AutoIRIMapper(parentDir.toFile(), true);
-        ontologyManager.getIRIMappers().add(newMapper);
-        logger.debug("Using AutoIRIMapper for directory: {}", parentDir);
-      }
-    }
     try {
+      var ontologyFile = filePath.toFile();
+      if (!ontologyFile.exists()) {
+        var message = "Ontology file does not exist: " + filePath;
+        logger.error(message);
+        throw new FileNotFoundException(message);
+      }
+
+      var ontologyManager = ontologyManagerProvider.getOntologyManagerWithLoadImports();
+
+      // Add IRI mapper for local imports in the same directory
+      ontologyManager.getIRIMappers().clear();
+      var parentDir = filePath.getParent();
+      if (parentDir != null) {
+        var catalogFile = findCatalogFile(parentDir);
+        if (catalogFile.isPresent()) {
+          var newMapper = new XMLCatalogIRIMapper(catalogFile.get().toFile());
+          ontologyManager.getIRIMappers().add(newMapper);
+          logger.debug("Using XMLCatalogIRIMapper with catalog file: {}", catalogFile.get());
+        } else {
+          var newMapper = new AutoIRIMapper(parentDir.toFile(), true);
+          ontologyManager.getIRIMappers().add(newMapper);
+          logger.debug("Using AutoIRIMapper for directory: {}", parentDir);
+        }
+      }
+
       logger.info("Loading ontology from: {}", filePath);
       var ontology = ontologyManager.loadOntologyFromOntologyDocument(ontologyFile);
 
@@ -102,8 +105,8 @@ public class OntologyLoader {
 
       // Get all ontologies including imports
       return ImmutableList.<OWLOntology>builder().add(ontology).addAll(importedOntologies).build();
-    } catch (OWLOntologyCreationException e) {
-      throw new RuntimeException("Failed to load ontology from: " + filePath, e);
+    } catch (IOException | OWLOntologyCreationException e) {
+      throw new OntologyLoadException("Failed to load ontology from: " + filePath, e);
     }
   }
 
