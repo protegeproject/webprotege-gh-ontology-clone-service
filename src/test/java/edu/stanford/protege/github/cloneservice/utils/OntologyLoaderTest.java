@@ -2,6 +2,7 @@ package edu.stanford.protege.github.cloneservice.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.stanford.protege.github.cloneservice.exception.OntologyLoadException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,26 +37,26 @@ class OntologyLoaderTest {
   }
 
   @Test
-  @DisplayName("Should throw FileNotFoundException when ontology file does not exist")
+  @DisplayName("Should throw OntologyLoadException when ontology file does not exist")
   void throwExceptionWhenFileDoesNotExist() {
     var nonExistentFile = tempDir.resolve("non-existent.owl");
 
     var exception =
         assertThrows(
-            FileNotFoundException.class,
-            () -> ontologyLoader.loadOntologyWithImports(nonExistentFile));
+            OntologyLoadException.class,
+            () -> ontologyLoader.loadOntologyFromFile(nonExistentFile));
 
-    assertEquals("Ontology file does not exist: " + nonExistentFile, exception.getMessage());
+    assertTrue(exception.getMessage().contains("Failed to load ontology from"));
+    assertTrue(exception.getCause() instanceof FileNotFoundException);
   }
 
   @Test
   @DisplayName("Should throw NullPointerException when file path is null")
   void throwExceptionWhenFilePathNull() {
     var exception =
-        assertThrows(
-            NullPointerException.class, () -> ontologyLoader.loadOntologyWithImports(null));
+        assertThrows(NullPointerException.class, () -> ontologyLoader.loadOntologyFromFile(null));
 
-    assertEquals("filePath cannot be null", exception.getMessage());
+    assertEquals("rootOntology cannot be null", exception.getMessage());
   }
 
   @Test
@@ -77,7 +78,7 @@ class OntologyLoaderTest {
     var owlFile = tempDir.resolve("test.owl");
     Files.writeString(owlFile, owlContent);
 
-    var result = ontologyLoader.loadOntologyWithImports(owlFile);
+    var result = ontologyLoader.loadOntologyFromFile(owlFile);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -97,7 +98,7 @@ class OntologyLoaderTest {
 
     var exception =
         assertThrows(
-            RuntimeException.class, () -> ontologyLoader.loadOntologyWithImports(invalidFile));
+            RuntimeException.class, () -> ontologyLoader.loadOntologyFromFile(invalidFile));
 
     assertNotNull(exception.getMessage());
     assertTrue(exception.getMessage().contains("Failed to load ontology from"));
@@ -123,7 +124,7 @@ class OntologyLoaderTest {
     var owlFile = tempDir.resolve("test-with-missing-import.owl");
     Files.writeString(owlFile, owlContentWithMissingImport);
 
-    var result = ontologyLoader.loadOntologyWithImports(owlFile);
+    var result = ontologyLoader.loadOntologyFromFile(owlFile);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -164,7 +165,7 @@ class OntologyLoaderTest {
     Files.writeString(importedFile, importedOntologyContent);
     Files.writeString(mainFile, mainOntologyContent);
 
-    var result = ontologyLoader.loadOntologyWithImports(mainFile);
+    var result = ontologyLoader.loadOntologyFromFile(mainFile);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -185,5 +186,169 @@ class OntologyLoaderTest {
     assertNotNull(ontology2);
     assertNotSame(ontology1, ontology2);
     assertNotEquals(ontology1.getOntologyID(), ontology2.getOntologyID());
+  }
+
+  @Test
+  @DisplayName("Should load ontology with imports using loadOntologyWithImports")
+  void loadOntologyWithImportsSuccessfully() throws IOException {
+    var importedOntologyContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/imported#"
+                     xml:base="http://example.org/imported"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="http://example.org/imported"/>
+                <owl:Class rdf:about="http://example.org/imported#ImportedClass"/>
+            </rdf:RDF>
+            """;
+
+    var mainOntologyContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/main#"
+                     xml:base="http://example.org/main"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="http://example.org/main">
+                    <owl:imports rdf:resource="http://example.org/imported"/>
+                </owl:Ontology>
+                <owl:Class rdf:about="http://example.org/main#MainClass"/>
+            </rdf:RDF>
+            """;
+
+    var importedFile = tempDir.resolve("imported.owl");
+    var mainFile = tempDir.resolve("main.owl");
+    Files.writeString(importedFile, importedOntologyContent);
+    Files.writeString(mainFile, mainOntologyContent);
+
+    var result = ontologyLoader.loadOntologyWithImports(mainFile);
+
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(2, result.size(), "Should load main ontology and imported ontology");
+
+    var mainOntology = result.get(0);
+    assertNotNull(mainOntology);
+    assertTrue(mainOntology.getOntologyID().getOntologyIRI().isPresent());
+  }
+
+  @Test
+  @DisplayName("Should load ontology without imports using loadOntologyWithoutImports")
+  void loadOntologyWithoutImportsSuccessfully() throws IOException {
+    var importedOntologyContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/imported#"
+                     xml:base="http://example.org/imported"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="http://example.org/imported"/>
+                <owl:Class rdf:about="http://example.org/imported#ImportedClass"/>
+            </rdf:RDF>
+            """;
+
+    var mainOntologyContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/main#"
+                     xml:base="http://example.org/main"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="http://example.org/main">
+                    <owl:imports rdf:resource="http://example.org/imported"/>
+                </owl:Ontology>
+                <owl:Class rdf:about="http://example.org/main#MainClass"/>
+            </rdf:RDF>
+            """;
+
+    var importedFile = tempDir.resolve("imported.owl");
+    var mainFile = tempDir.resolve("main.owl");
+    Files.writeString(importedFile, importedOntologyContent);
+    Files.writeString(mainFile, mainOntologyContent);
+
+    var result = ontologyLoader.loadOntologyWithoutImports(mainFile);
+
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(1, result.size(), "Should load only main ontology, ignoring imports");
+
+    var mainOntology = result.get(0);
+    assertNotNull(mainOntology);
+    assertTrue(mainOntology.getOntologyID().getOntologyIRI().isPresent());
+  }
+
+  @Test
+  @DisplayName("Should load ontology with boolean parameter - includeImports=true")
+  void loadOntologyFromFileWithImportsTrue() throws IOException {
+    var owlContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/test#"
+                     xml:base="http://example.org/test"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#"
+                     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+                <owl:Ontology rdf:about="http://example.org/test"/>
+                <owl:Class rdf:about="http://example.org/test#TestClass"/>
+            </rdf:RDF>
+            """;
+
+    var owlFile = tempDir.resolve("test.owl");
+    Files.writeString(owlFile, owlContent);
+
+    var result = ontologyLoader.loadOntologyFromFile(owlFile, true);
+
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  @DisplayName("Should load ontology with boolean parameter - includeImports=false")
+  void loadOntologyFromFileWithImportsFalse() throws IOException {
+    var owlContent =
+        """
+            <?xml version="1.0"?>
+            <rdf:RDF xmlns="http://example.org/test#"
+                     xml:base="http://example.org/test"
+                     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                     xmlns:owl="http://www.w3.org/2002/07/owl#"
+                     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+                <owl:Ontology rdf:about="http://example.org/test"/>
+                <owl:Class rdf:about="http://example.org/test#TestClass"/>
+            </rdf:RDF>
+            """;
+
+    var owlFile = tempDir.resolve("test.owl");
+    Files.writeString(owlFile, owlContent);
+
+    var result = ontologyLoader.loadOntologyFromFile(owlFile, false);
+
+    assertNotNull(result);
+    assertFalse(result.isEmpty());
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  @DisplayName(
+      "Should throw NullPointerException when rootOntology path is null in loadOntologyWithImports")
+  void throwExceptionWhenRootOntologyPathNullInLoadWithImports() {
+    var exception =
+        assertThrows(
+            NullPointerException.class, () -> ontologyLoader.loadOntologyWithImports(null));
+
+    assertEquals("rootOntology cannot be null", exception.getMessage());
+  }
+
+  @Test
+  @DisplayName(
+      "Should throw NullPointerException when targetOntology path is null in loadOntologyWithoutImports")
+  void throwExceptionWhenTargetOntologyPathNullInLoadWithoutImports() {
+    var exception =
+        assertThrows(
+            NullPointerException.class, () -> ontologyLoader.loadOntologyWithoutImports(null));
+
+    assertEquals("targetOntology cannot be null", exception.getMessage());
   }
 }

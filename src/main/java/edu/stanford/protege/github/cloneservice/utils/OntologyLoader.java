@@ -1,7 +1,9 @@
 package edu.stanford.protege.github.cloneservice.utils;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import edu.stanford.protege.github.cloneservice.exception.OntologyLoadException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import org.protege.xmlcatalog.owlapi.XMLCatalogIRIMapper;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.AutoIRIMapper;
@@ -49,8 +52,8 @@ public class OntologyLoader {
   /**
    * Loads an OWL ontology from the specified file path along with all its imported ontologies.
    *
-   * <p>The returned list contains the main ontology as the first element, followed by all imported
-   * ontologies. If the ontology has no imports, the list will contain only the main ontology.
+   * <p>The returned list contains the root ontology as the first element, followed by all imported
+   * ontologies. If the ontology has no imports, the list will contain only the root ontology.
    *
    * <p><strong>Import Resolution:</strong>
    *
@@ -60,29 +63,23 @@ public class OntologyLoader {
    *   <li>All successfully resolved imports are included in the result
    * </ul>
    *
-   * @param filePath the path to the ontology file to load.
-   * @return a list containing the main ontology and all its imported ontologies. The main ontology
-   *     is always the first element. Returns an empty list if the file does not exist.
-   * @throws OntologyLoadException if {@code filePath} is {@code null} or doesn't exist, The catalog
-   *     file is invalid, or ontology failed to load.
+   * @param rootOntology the path to the root ontology file to load.
+   * @return a list containing the root ontology and all its imported ontologies. The root ontology
+   *     is always the first element.
+   * @throws OntologyLoadException if {@code rootOntology} is {@code null} or doesn't exist, The
+   *     catalog file is invalid, or ontology failed to load.
    */
   @Nonnull
-  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path filePath)
+  public List<OWLOntology> loadOntologyWithImports(@Nonnull Path rootOntology)
       throws OntologyLoadException {
-    Objects.requireNonNull(filePath, "filePath cannot be null");
+    Objects.requireNonNull(rootOntology, "rootOntology cannot be null");
     try {
-      var ontologyFile = filePath.toFile();
-      if (!ontologyFile.exists()) {
-        var message = "Ontology file does not exist: " + filePath;
-        logger.error(message);
-        throw new FileNotFoundException(message);
-      }
-
+      var ontologyFile = getOntologyFile(rootOntology);
       var ontologyManager = ontologyManagerProvider.getOntologyManagerWithLoadImports();
 
       // Add IRI mapper for local imports in the same directory
       ontologyManager.getIRIMappers().clear();
-      var parentDir = filePath.getParent();
+      var parentDir = rootOntology.getParent();
       if (parentDir != null) {
         var catalogFile = findCatalogFile(parentDir);
         if (catalogFile.isPresent()) {
@@ -96,18 +93,90 @@ public class OntologyLoader {
         }
       }
 
-      logger.info("Loading ontology from: {}", filePath);
+      logger.info("Loading root ontology from: {}", rootOntology);
       var ontology = ontologyManager.loadOntologyFromOntologyDocument(ontologyFile);
 
       // Log information about imports
-      var importedOntologies = ontologyManager.getImports(ontology);
+      var importedOntologies = Sets.<OWLOntology>newHashSet();
+      importedOntologies.addAll(ontology.getImports());
       logger.info("Successfully loaded ontology with {} imports", importedOntologies.size());
 
       // Get all ontologies including imports
       return ImmutableList.<OWLOntology>builder().add(ontology).addAll(importedOntologies).build();
     } catch (IOException | OWLOntologyCreationException e) {
-      throw new OntologyLoadException("Failed to load ontology from: " + filePath, e);
+      throw new OntologyLoadException("Failed to load ontology from: " + rootOntology, e);
     }
+  }
+
+  /**
+   * Loads an OWL ontology from the specified file path without loading its imported ontologies.
+   *
+   * <p>The returned list contains only the target ontology. All import statements are ignored.
+   *
+   * @param targetOntology the path to the ontology file to load.
+   * @return a list containing only the target ontology.
+   * @throws OntologyLoadException if {@code targetOntology} is {@code null} or doesn't exist, The
+   *     catalog file is invalid, or ontology failed to load.
+   */
+  @Nonnull
+  public List<OWLOntology> loadOntologyWithoutImports(@Nonnull Path targetOntology)
+      throws OntologyLoadException {
+    Objects.requireNonNull(targetOntology, "targetOntology cannot be null");
+    try {
+      var ontologyFile = getOntologyFile(targetOntology);
+      var ontologyManager = ontologyManagerProvider.getOntologyManagerWithIgnoredImports();
+
+      logger.info("Loading ontology from: {}", targetOntology);
+      var ontology = ontologyManager.loadOntologyFromOntologyDocument(ontologyFile);
+
+      // Return only the root ontology
+      return ImmutableList.of(ontology);
+    } catch (IOException | OWLOntologyCreationException e) {
+      throw new OntologyLoadException("Failed to load ontology from: " + targetOntology, e);
+    }
+  }
+
+  /**
+   * Loads an OWL ontology from the specified file path along with all its imported ontologies.
+   *
+   * <p>This method provides backward compatibility by defaulting to loading imports.
+   *
+   * @param filePath the path to the ontology file to load.
+   * @return a list containing the main ontology and all its imported ontologies.
+   * @throws OntologyLoadException if {@code filePath} is {@code null} or doesn't exist, The catalog
+   *     file is invalid, or ontology failed to load.
+   */
+  @Nonnull
+  public List<OWLOntology> loadOntologyFromFile(@Nonnull Path filePath)
+      throws OntologyLoadException {
+    return loadOntologyWithImports(filePath);
+  }
+
+  /**
+   * Loads an OWL ontology from the specified file path along with all its imported ontologies.
+   *
+   * @param filePath the path to the ontology file to load.
+   * @param includeImports whether to include imported ontologies
+   * @return a list containing the main ontology and optionally its imported ontologies.
+   * @throws OntologyLoadException if {@code filePath} is {@code null} or doesn't exist, The catalog
+   *     file is invalid, or ontology failed to load.
+   */
+  @Nonnull
+  public List<OWLOntology> loadOntologyFromFile(@Nonnull Path filePath, boolean includeImports)
+      throws OntologyLoadException {
+    return includeImports
+        ? loadOntologyWithImports(filePath)
+        : loadOntologyWithoutImports(filePath);
+  }
+
+  private File getOntologyFile(@NotNull Path filePath) throws FileNotFoundException {
+    var ontologyFile = filePath.toFile();
+    if (!ontologyFile.exists()) {
+      var message = "Ontology file does not exist: " + filePath;
+      logger.error(message);
+      throw new FileNotFoundException(message);
+    }
+    return ontologyFile;
   }
 
   /**
