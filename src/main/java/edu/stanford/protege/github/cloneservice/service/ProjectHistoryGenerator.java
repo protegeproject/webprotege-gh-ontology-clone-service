@@ -4,6 +4,8 @@ import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.exceptions.GitHubNavigatorException;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
+import edu.stanford.protege.github.cloneservice.exception.StorageException;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
@@ -46,23 +48,26 @@ public class ProjectHistoryGenerator {
    * @param repositoryCoordinates the GitHub repository specification
    * @param targetOntologyFile the ontology file in the repository to generate the history for
    * @return a {@link BlobLocation} indicating where the project history document has been stored
-   * @throws Exception if an error occurs during repository access, history analysis, or storage
-   *     operations. This may include network issues, authentication failures, file access problems,
-   *     or serialization errors
+   * @throws StorageException if an error occurs during repository access, history analysis, or
+   *     storage operations. This may include network issues, authentication failures, file access
+   *     problems, or serialization errors
    */
   public BlobLocation writeProjectHistoryFromGitHubRepo(
       UserId userId,
       ProjectId projectId,
       RepositoryCoordinates repositoryCoordinates,
-      RelativeFilePath targetOntologyFile)
-      throws Exception {
-    var localCloneDirectory = getLocalCloneDirectory(userId, projectId);
-    var repository =
-        getGitHubRepository(repositoryCoordinates, localCloneDirectory, targetOntologyFile);
-    var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
-    var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
-    logger.info("Stored project history document at: {}", projectHistoryLocation);
-    return projectHistoryLocation;
+      RelativeFilePath targetOntologyFile) {
+    try {
+      var localCloneDirectory = getLocalCloneDirectory(userId, projectId);
+      var repository =
+          getGitHubRepository(repositoryCoordinates, localCloneDirectory, targetOntologyFile);
+      var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
+      var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
+      logger.info("Stored project history document at: {}", projectHistoryLocation);
+      return projectHistoryLocation;
+    } catch (IOException | GitHubNavigatorException | OntologyComparisonException e) {
+      throw new StorageException("Problem writing project history document to storage", e);
+    }
   }
 
   private Path getLocalCloneDirectory(UserId userId, ProjectId projectId) throws IOException {
