@@ -114,14 +114,25 @@ public class OntologyHistoryAnalyzer {
   /**
    * Loads ontologies with centralized error handling and logging
    *
-   * @param ontologyFile the ontology file to load
+   * @param rootOntology the root ontology file to load
    * @param commitMetadata metadata of the current commit for logging
    * @return loaded ontologies or null if loading failed
    */
   private Optional<List<OWLOntology>> loadOntologiesWithErrorHandling(
-      @Nonnull Path ontologyFile, @Nonnull CommitMetadata commitMetadata) {
+      @Nonnull Path rootOntology, @Nonnull CommitMetadata commitMetadata) {
     try {
-      var ontologies = ontologyLoader.loadOntologyWithImports(ontologyFile);
+      if (rootOntology.endsWith(".obo") || rootOntology.endsWith(".ofn")) {
+        var changedFiles = commitMetadata.getChangedFiles();
+        if (changedFiles.size() == 1) {
+          var changedFile = changedFiles.get(0);
+          if (rootOntology.endsWith(changedFile)) {
+            var ontologies = ontologyLoader.loadOntologyWithoutImports(rootOntology);
+            return Optional.of(ontologies);
+          }
+        }
+      }
+      // Fallback call to load the root ontology along with its imports
+      var ontologies = ontologyLoader.loadOntologyWithImports(rootOntology);
       return Optional.of(ontologies);
     } catch (Exception e) {
       logger.info(
