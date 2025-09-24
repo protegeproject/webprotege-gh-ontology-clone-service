@@ -19,10 +19,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -43,8 +50,22 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  */
 @SpringBootTest
 @Testcontainers
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "webprotege.rabbitmq.commands-subscribe=false",
+    "webprotege.rabbitmq.event-subscribe=false"
+})
 @DisplayName("Grocery Ontology MinIO Integration Tests")
 class GroceryOntologyMinioIntegrationTest {
+
+  @TestConfiguration
+  static class TestConfig {
+    @Bean
+    @Primary
+    public ConnectionFactory connectionFactory() {
+      return Mockito.mock(ConnectionFactory.class);
+    }
+  }
 
   @Container
   static final MinIOContainer minioContainer =
