@@ -18,6 +18,30 @@
         ontology file. The history is then transformed into a WebProtégé-compatible revision document
         and stored in cloud storage via MinIO.</description>
 
+    <licenses>
+        <license>
+            <name>BSD 2-Clause License</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>johardi</id>
+            <name>Josef Hardi</name>
+            <email>johardi@stanford.edu</email>
+            <organization>Stanford University</organization>
+            <organizationUrl>https://protege.stanford.edu</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/protegeproject/webprotege-gh-ontology-clone-service.git</connection>
+        <developerConnection>scm:git:ssh://github.com:protegeproject/webprotege-gh-ontology-clone-service.git</developerConnection>
+        <url>https://github.com/protegeproject/webprotege-gh-ontology-clone-service/tree/master</url>
+    </scm>
+
     <properties>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -346,27 +370,14 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.7</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
                         </configuration>
-                        <dependencies>
-                            <!--
-                              TODO:
-                                Remove after OSSRH-66257, NEXUS-26993 are fixed,
-                                possibly via https://github.com/sonatype/nexus-maven-plugins/pull/91
-                            -->
-                            <dependency>
-                                <groupId>com.thoughtworks.xstream</groupId>
-                                <artifactId>xstream</artifactId>
-                                <version>1.4.15</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
 
                 </plugins>
