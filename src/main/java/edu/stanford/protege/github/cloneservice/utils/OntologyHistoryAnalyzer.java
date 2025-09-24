@@ -66,7 +66,7 @@ public class OntologyHistoryAnalyzer {
       var targetOntologyFile = ontologyFilePath.asString();
       var commitNavigator =
           CommitNavigatorBuilder.forWorkingDirectory(workingDirectory)
-              .fileFilters(targetOntologyFile)
+              .fileFilters("*.owl", "*.obo", "*.ofn", "*.ttl")
               .build();
 
       // Resolve the absolute path to the ontology file in the local clone
