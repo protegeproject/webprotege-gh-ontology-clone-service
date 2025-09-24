@@ -5,10 +5,13 @@ import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
+import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
+import edu.stanford.protege.webprotege.ipc.EventDispatcher;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
+import java.util.concurrent.Executor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,10 +27,11 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
 
   private CreateProjectHistoryFromGitHubRepoCommandHandler commandHandler;
 
-  @Mock private ProjectHistoryGenerator projectHistoryGenerator;
-
+  @Mock private OntologyHistoryAnalyzer ontologyHistoryAnalyzer;
+  @Mock private ProjectHistoryStorer projectHistoryStorer;
+  @Mock private EventDispatcher eventDispatcher;
+  @Mock private Executor executor;
   @Mock private ExecutionContext executionContext;
-
   @Mock private RepositoryCoordinates repositoryCoordinates;
 
   private ProjectId testProjectId;
@@ -38,7 +42,8 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
 
   @BeforeEach
   void setUp() {
-    commandHandler = new CreateProjectHistoryFromGitHubRepoCommandHandler(projectHistoryGenerator);
+    commandHandler = new CreateProjectHistoryFromGitHubRepoCommandHandler(
+        ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, executor);
     testProjectId = ProjectId.valueOf("12345678-1234-1234-1234-123456789012");
     testUserId = UserId.valueOf("test-user");
     testBlobLocation = new BlobLocation("test-bucket", "test/path/document.json");
@@ -51,12 +56,9 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
 
   @Test
   @DisplayName("handleRequest should process request successfully and return response")
-  void handleRequestShouldProcessRequestSuccessfullyAndReturnResponse() throws Exception {
+  void handleRequestShouldProcessRequestSuccessfullyAndReturnResponse() {
     // Arrange
     when(executionContext.userId()).thenReturn(testUserId);
-    when(projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-            testUserId, testProjectId, repositoryCoordinates, testTargetOntologyFile))
-        .thenReturn(testBlobLocation);
 
     // Act
     Mono<CreateProjectHistoryFromGitHubRepoResponse> result =
@@ -67,18 +69,15 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     assertNotNull(response);
     assertEquals(testProjectId, response.projectId());
     assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-    assertEquals(testBlobLocation, response.projectHistoryLocation());
+    assertNotNull(response.eventId(), "Event ID should be generated");
 
-    // Verify interactions with mocked dependencies
-    verify(projectHistoryGenerator)
-        .writeProjectHistoryFromGitHubRepo(
-            testUserId, testProjectId, repositoryCoordinates, testTargetOntologyFile);
+    // Verify the execution context was accessed
     verify(executionContext).userId();
   }
 
   @Test
-  @DisplayName("handleRequest should pass all request parameters correctly")
-  void handleRequestShouldPassAllRequestParametersCorrectly() throws Exception {
+  @DisplayName("handleRequest should return response with correct request data")
+  void handleRequestShouldReturnResponseWithCorrectRequestData() {
     // Arrange
     var specificProjectId = ProjectId.valueOf("87654321-4321-4321-4321-210987654321");
     var specificUserId = UserId.valueOf("specific-user");
@@ -88,39 +87,39 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
             specificProjectId, repositoryCoordinates, specificTargetFile);
 
     when(executionContext.userId()).thenReturn(specificUserId);
-    when(projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-            specificUserId, specificProjectId, repositoryCoordinates, specificTargetFile))
-        .thenReturn(testBlobLocation);
 
     // Act
-    commandHandler.handleRequest(specificRequest, executionContext).block();
+    CreateProjectHistoryFromGitHubRepoResponse response = 
+        commandHandler.handleRequest(specificRequest, executionContext).block();
 
-    // Assert - verify exact parameter passing
-    verify(projectHistoryGenerator)
-        .writeProjectHistoryFromGitHubRepo(
-            eq(specificUserId),
-            eq(specificProjectId),
-            eq(repositoryCoordinates),
-            eq(specificTargetFile));
+    // Assert - verify response contains the correct data from the request
+    assertNotNull(response);
+    assertEquals(specificProjectId, response.projectId());
+    assertEquals(repositoryCoordinates, response.repositoryCoordinates());
+    assertNotNull(response.eventId());
     verify(executionContext).userId();
   }
 
   @Test
-  @DisplayName("handleRequest should preserve repository coordinates in response")
-  void handleRequestShouldPreserveRepositoryCoordinatesInResponse() throws Exception {
+  @DisplayName("handleRequest should generate unique event IDs for different requests")
+  void handleRequestShouldGenerateUniqueEventIdsForDifferentRequests() {
     // Arrange
     when(executionContext.userId()).thenReturn(testUserId);
-    when(projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(any(), any(), any(), any()))
-        .thenReturn(testBlobLocation);
 
-    // Act
-    Mono<CreateProjectHistoryFromGitHubRepoResponse> result =
-        commandHandler.handleRequest(testRequest, executionContext);
+    // Act - make two separate requests
+    CreateProjectHistoryFromGitHubRepoResponse response1 =
+        commandHandler.handleRequest(testRequest, executionContext).block();
+    CreateProjectHistoryFromGitHubRepoResponse response2 =
+        commandHandler.handleRequest(testRequest, executionContext).block();
 
-    // Assert
-    CreateProjectHistoryFromGitHubRepoResponse response = result.block();
-    assertNotNull(response);
-    assertSame(repositoryCoordinates, response.repositoryCoordinates());
-    assertSame(testProjectId, response.projectId());
+    // Assert - event IDs should be different
+    assertNotNull(response1);
+    assertNotNull(response2);
+    assertNotEquals(response1.eventId(), response2.eventId(), 
+        "Each request should generate a unique event ID");
+    
+    // But project and repository data should be the same
+    assertEquals(response1.projectId(), response2.projectId());
+    assertEquals(response1.repositoryCoordinates(), response2.repositoryCoordinates());
   }
 }
