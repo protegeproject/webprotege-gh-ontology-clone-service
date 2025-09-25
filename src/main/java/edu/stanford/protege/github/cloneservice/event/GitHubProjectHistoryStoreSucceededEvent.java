@@ -6,14 +6,16 @@ import edu.stanford.protege.webprotege.common.*;
 /**
  * Event dispatched when project history is successfully imported from a GitHub repository.
  *
- * @param eventId The correlation event ID for tracking the operation
  * @param projectId The project for which the history was imported
+ * @param requestId The correlated request ID for tracking the operation
+ * @param eventId The correlation event ID for tracking the operation
  * @param repositoryCoordinates The coordinates of the repository from which history was imported
  * @param projectHistoryLocation The location where the project history is stored
  */
 public record GitHubProjectHistoryStoreSucceededEvent(
-    EventId eventId,
     ProjectId projectId,
+    RequestId requestId,
+    EventId eventId,
     RepositoryCoordinates repositoryCoordinates,
     BlobLocation projectHistoryLocation)
     implements ProjectEvent {
