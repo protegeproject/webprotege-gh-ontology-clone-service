@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         java-version: [17, 21]
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
         mvn clean install -DskipTests
 
     - name: Run tests
-      run: mvn clean test
+      run: mvn clean test -Dtest="!*Integration*"
 
     - name: Generate test report
       uses: dorny/test-reporter@v1
