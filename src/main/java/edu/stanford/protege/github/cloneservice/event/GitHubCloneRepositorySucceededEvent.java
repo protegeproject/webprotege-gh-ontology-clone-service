@@ -17,18 +17,17 @@ import edu.stanford.protege.webprotege.common.RequestId;
  * @param repository The cloned GitHub repository
  */
 public record GitHubCloneRepositorySucceededEvent(
-    ProjectId projectId,
-    RequestId requestId,
-    EventId eventId,
-    RepositoryCoordinates repositoryCoordinates,
-    GitHubRepository repository)
-    implements ProjectEvent {
+        ProjectId projectId,
+        RequestId requestId,
+        EventId eventId,
+        RepositoryCoordinates repositoryCoordinates,
+        GitHubRepository repository)
+        implements ProjectEvent {
 
-  private static final String CHANNEL =
-      "webprotege.events.projects.GitHubCloneRepositorySucceededEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRepositorySucceededEvent";
 
-  @Override
-  public String getChannel() {
-    return CHANNEL;
-  }
+    @Override
+    public String getChannel() {
+        return CHANNEL;
+    }
 }

@@ -16,18 +16,17 @@ import edu.stanford.protege.webprotege.common.RequestId;
  * @param errorMessage The error message describing the failure
  */
 public record GitHubCloneRepositoryFailedEvent(
-    ProjectId projectId,
-    RequestId requestId,
-    EventId eventId,
-    RepositoryCoordinates repositoryCoordinates,
-    String errorMessage)
-    implements ProjectEvent {
+        ProjectId projectId,
+        RequestId requestId,
+        EventId eventId,
+        RepositoryCoordinates repositoryCoordinates,
+        String errorMessage)
+        implements ProjectEvent {
 
-  private static final String CHANNEL =
-      "webprotege.events.projects.GitHubCloneRepositoryFailedEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRepositoryFailedEvent";
 
-  @Override
-  public String getChannel() {
-    return CHANNEL;
-  }
+    @Override
+    public String getChannel() {
+        return CHANNEL;
+    }
 }

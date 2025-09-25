@@ -18,27 +18,24 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Import(WebProtegeIpcApplication.class)
 public class ApplicationBeansConfiguration {
 
-  @Bean
-  CreateProjectHistoryFromGitHubRepoCommandHandler createProjectHistoryFromGitHubRepoCommandHandler(
-      OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
-      ProjectHistoryStorer projectHistoryStorer,
-      EventDispatcher eventDispatcher,
-      @Qualifier("projectHistoryImportExecutor") Executor projectHistoryImportExecutor) {
-    return new CreateProjectHistoryFromGitHubRepoCommandHandler(
-        ontologyHistoryAnalyzer,
-        projectHistoryStorer,
-        eventDispatcher,
-        projectHistoryImportExecutor);
-  }
+    @Bean
+    CreateProjectHistoryFromGitHubRepoCommandHandler createProjectHistoryFromGitHubRepoCommandHandler(
+            OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
+            ProjectHistoryStorer projectHistoryStorer,
+            EventDispatcher eventDispatcher,
+            @Qualifier("projectHistoryImportExecutor") Executor projectHistoryImportExecutor) {
+        return new CreateProjectHistoryFromGitHubRepoCommandHandler(
+                ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, projectHistoryImportExecutor);
+    }
 
-  @Bean(name = "projectHistoryImportExecutor")
-  Executor projectHistoryImportExecutor() {
-    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(2);
-    executor.setMaxPoolSize(8);
-    executor.setQueueCapacity(100);
-    executor.setThreadNamePrefix("project-history-import-");
-    executor.initialize();
-    return executor;
-  }
+    @Bean(name = "projectHistoryImportExecutor")
+    Executor projectHistoryImportExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("project-history-import-");
+        executor.initialize();
+        return executor;
+    }
 }

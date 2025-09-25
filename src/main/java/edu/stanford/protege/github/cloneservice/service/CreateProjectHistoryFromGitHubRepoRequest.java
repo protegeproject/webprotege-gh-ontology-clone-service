@@ -12,16 +12,16 @@ import edu.stanford.protege.webprotege.common.RequestId;
 
 @JsonTypeName(CHANNEL)
 public record CreateProjectHistoryFromGitHubRepoRequest(
-    @JsonProperty("requestId") RequestId requestId,
-    @JsonProperty("projectId") ProjectId projectId,
-    @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates,
-    @JsonProperty("targetOntologyFile") RelativeFilePath targetOntologyFile)
-    implements Request<CreateProjectHistoryFromGitHubRepoResponse> {
+        @JsonProperty("requestId") RequestId requestId,
+        @JsonProperty("projectId") ProjectId projectId,
+        @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates,
+        @JsonProperty("targetOntologyFile") RelativeFilePath targetOntologyFile)
+        implements Request<CreateProjectHistoryFromGitHubRepoResponse> {
 
-  public static final String CHANNEL = "webprotege.github.CreateProjectHistoryFromGitHubRepo";
+    public static final String CHANNEL = "webprotege.github.CreateProjectHistoryFromGitHubRepo";
 
-  @Override
-  public String getChannel() {
-    return CHANNEL;
-  }
+    @Override
+    public String getChannel() {
+        return CHANNEL;
+    }
 }

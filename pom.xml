@@ -283,7 +283,7 @@
                 <version>2.43.0</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat/>
+                        <palantirJavaFormat/>
                         <importOrder/>
                         <removeUnusedImports/>
                         <formatAnnotations/>

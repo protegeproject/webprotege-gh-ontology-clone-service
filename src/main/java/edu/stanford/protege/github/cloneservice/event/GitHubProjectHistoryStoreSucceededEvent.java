@@ -13,18 +13,17 @@ import edu.stanford.protege.webprotege.common.*;
  * @param projectHistoryLocation The location where the project history is stored
  */
 public record GitHubProjectHistoryStoreSucceededEvent(
-    ProjectId projectId,
-    RequestId requestId,
-    EventId eventId,
-    RepositoryCoordinates repositoryCoordinates,
-    BlobLocation projectHistoryLocation)
-    implements ProjectEvent {
+        ProjectId projectId,
+        RequestId requestId,
+        EventId eventId,
+        RepositoryCoordinates repositoryCoordinates,
+        BlobLocation projectHistoryLocation)
+        implements ProjectEvent {
 
-  private static final String CHANNEL =
-      "webprotege.events.projects.GitHubProjectHistoryStoreSucceededEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryStoreSucceededEvent";
 
-  @Override
-  public String getChannel() {
-    return CHANNEL;
-  }
+    @Override
+    public String getChannel() {
+        return CHANNEL;
+    }
 }

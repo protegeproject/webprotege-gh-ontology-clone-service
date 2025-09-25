@@ -12,8 +12,8 @@ import edu.stanford.protege.webprotege.common.Response;
 
 @JsonTypeName(CHANNEL)
 public record CreateProjectHistoryFromGitHubRepoResponse(
-    @JsonProperty("projectId") ProjectId projectId,
-    @JsonProperty("requestId") RequestId requestId,
-    @JsonProperty("eventId") EventId eventId,
-    @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates)
-    implements Response {}
+        @JsonProperty("projectId") ProjectId projectId,
+        @JsonProperty("requestId") RequestId requestId,
+        @JsonProperty("eventId") EventId eventId,
+        @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates)
+        implements Response {}
