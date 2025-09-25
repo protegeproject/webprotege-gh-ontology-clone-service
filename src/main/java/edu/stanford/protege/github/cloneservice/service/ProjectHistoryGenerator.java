@@ -62,7 +62,8 @@ public class ProjectHistoryGenerator {
       var repository =
           getGitHubRepository(repositoryCoordinates, localCloneDirectory, targetOntologyFile);
       var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
-      var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectHistory);
+      var projectHistoryLocation =
+          projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
       logger.info("Stored project history document at: {}", projectHistoryLocation);
       return projectHistoryLocation;
     } catch (IOException | GitHubNavigatorException | OntologyComparisonException e) {
