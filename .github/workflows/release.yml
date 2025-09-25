@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -29,9 +31,6 @@ jobs:
           server-password: OSSRH_TOKEN
           gpg-private-key: ${{secrets.GPG_PRIVATE_KEY}}
           gpg-passphrase: GPG_PASSPHRASE
-      - name: Bump version
-        id: bump
-        uses: mickem/gh-action-bump-maven-version@v1
       - name: Build with Maven
         run: mvn --batch-mode -Prelease deploy
       - name: Release
@@ -39,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.bump.outputs.tag }}
+          tag_name: ${{ github.ref_name }}
           generate_release_notes: true
 
 env:
