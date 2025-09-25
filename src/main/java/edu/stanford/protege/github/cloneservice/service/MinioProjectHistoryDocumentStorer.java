@@ -66,7 +66,8 @@ public class MinioProjectHistoryDocumentStorer {
         | InvalidKeyException
         | InternalException
         | InsufficientDataException e) {
-      throw new StorageException("Problem writing revision history document to storage", e);
+      throw new StorageException(
+          "Problem writing revision history document to storage " + documentPath, e);
     }
   }
 

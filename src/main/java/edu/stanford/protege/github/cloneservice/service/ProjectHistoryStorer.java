@@ -1,7 +1,9 @@
 package edu.stanford.protege.github.cloneservice.service;
 
+import edu.stanford.protege.github.cloneservice.exception.StorageException;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.webprotege.common.BlobLocation;
+import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.revision.Revision;
 import edu.stanford.protege.webprotege.revision.RevisionSerializationTask;
 import java.io.IOException;
@@ -11,10 +13,14 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectHistoryStorer {
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final ProjectHistoryConverter projectHistoryConverter;
   private final MinioProjectHistoryDocumentStorer minioProjectHistoryDocumentStorer;
@@ -43,25 +49,47 @@ public class ProjectHistoryStorer {
    * @throws UncheckedIOException if an I/O error occurs during file creation, serialization,
    *     storage, or cleanup operations
    */
-  public BlobLocation storeProjectHistory(List<OntologyCommitChange> projectHistory) {
+  public BlobLocation storeProjectHistory(
+      ProjectId projectId, List<OntologyCommitChange> projectHistory) {
     try {
-      var tempFile = Files.createTempFile("webprotege-", "-clone-project-history.bin");
       var revisions = projectHistoryConverter.convertProjectHistoryToRevisions(projectHistory);
-      revisions.forEach(revision -> serialize(revision, tempFile));
-      var location = minioProjectHistoryDocumentStorer.storeDocument(tempFile);
-      Files.delete(tempFile);
-      return location;
+      return serializeAndStoreRevisions(projectId, revisions);
     } catch (IOException e) {
+      logger.error("{} Problem storing project history", projectId, e);
       throw new UncheckedIOException("Problem storing project history", e);
     }
   }
 
-  private void serialize(Revision revision, Path tempFile) {
+  private BlobLocation serializeAndStoreRevisions(ProjectId projectId, List<Revision> revisions)
+      throws IOException {
+    var tempFilePath = Files.createTempFile("webprotege-", "-clone-project-history.bin");
+    try {
+      revisions.forEach(revision -> serialize(projectId, revision, tempFilePath));
+      return minioProjectHistoryDocumentStorer.storeDocument(tempFilePath);
+    } catch (StorageException | UncheckedIOException e) {
+      logger.error("{} Problem serializing project history", projectId, e);
+      throw e;
+    } finally {
+      try {
+        Files.delete(tempFilePath);
+      } catch (IOException e) {
+        logger.error("{} Error deleting temp file {}", projectId, tempFilePath, e);
+      }
+    }
+  }
+
+  private void serialize(ProjectId projectId, Revision revision, Path tempFile) {
     try {
       var revisionSerializationTask = new RevisionSerializationTask(tempFile.toFile(), revision);
       revisionSerializationTask.call();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      logger.error(
+          "{} Error serializing revision {} to {}",
+          projectId,
+          revision.getRevisionNumber(),
+          tempFile,
+          e);
+      throw new UncheckedIOException("Problem during serializing the project revision", e);
     }
   }
 }
