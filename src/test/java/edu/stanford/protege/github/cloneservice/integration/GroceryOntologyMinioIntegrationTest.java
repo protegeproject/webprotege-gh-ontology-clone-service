@@ -17,9 +17,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.mockito.Mockito;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,10 +51,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Testcontainers
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "webprotege.rabbitmq.commands-subscribe=false",
-    "webprotege.rabbitmq.event-subscribe=false"
-})
+@TestPropertySource(
+    properties = {
+      "webprotege.rabbitmq.commands-subscribe=false",
+      "webprotege.rabbitmq.event-subscribe=false"
+    })
 @DisplayName("Grocery Ontology MinIO Integration Tests")
 class GroceryOntologyMinioIntegrationTest {
 

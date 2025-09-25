@@ -42,8 +42,9 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
 
   @BeforeEach
   void setUp() {
-    commandHandler = new CreateProjectHistoryFromGitHubRepoCommandHandler(
-        ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, executor);
+    commandHandler =
+        new CreateProjectHistoryFromGitHubRepoCommandHandler(
+            ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, executor);
     testProjectId = ProjectId.valueOf("12345678-1234-1234-1234-123456789012");
     testUserId = UserId.valueOf("test-user");
     testBlobLocation = new BlobLocation("test-bucket", "test/path/document.json");
@@ -89,7 +90,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     when(executionContext.userId()).thenReturn(specificUserId);
 
     // Act
-    CreateProjectHistoryFromGitHubRepoResponse response = 
+    CreateProjectHistoryFromGitHubRepoResponse response =
         commandHandler.handleRequest(specificRequest, executionContext).block();
 
     // Assert - verify response contains the correct data from the request
@@ -115,9 +116,9 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     // Assert - event IDs should be different
     assertNotNull(response1);
     assertNotNull(response2);
-    assertNotEquals(response1.eventId(), response2.eventId(), 
-        "Each request should generate a unique event ID");
-    
+    assertNotEquals(
+        response1.eventId(), response2.eventId(), "Each request should generate a unique event ID");
+
     // But project and repository data should be the same
     assertEquals(response1.projectId(), response2.projectId());
     assertEquals(response1.repositoryCoordinates(), response2.repositoryCoordinates());
