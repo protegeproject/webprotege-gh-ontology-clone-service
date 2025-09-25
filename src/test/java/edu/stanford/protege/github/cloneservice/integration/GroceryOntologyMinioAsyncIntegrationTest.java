@@ -8,6 +8,7 @@ import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoCommandHandler;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoRequest;
 import edu.stanford.protege.webprotege.common.ProjectId;
+import edu.stanford.protege.webprotege.common.RequestId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import io.minio.GetObjectArgs;
@@ -118,7 +119,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     Mockito.when(executionContext.userId()).thenReturn(userId);
     var request =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
     logger.info(
         "Test configuration - User: {}, Project: {}, Repository: {}, Branch: {}, Target file: {}",
@@ -139,9 +140,9 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         repositoryCoordinates,
         response.repositoryCoordinates(),
         "Should return correct repository coordinates");
-    assertNotNull(response.eventId(), "Event ID should not be null");
+    assertNotNull(response.requestId(), "Event ID should not be null");
 
-    logger.info("Received async response with event ID: {}", response.eventId());
+    logger.info("Received async response with event ID: {}", response.requestId());
 
     // Wait for async processing to complete
     logger.info("Waiting for async processing to complete...");
@@ -169,10 +170,10 @@ class GroceryOntologyMinioAsyncIntegrationTest {
 
     var request1 =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId1, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId1, repositoryCoordinates, ONTOLOGY_FILE_PATH);
     var request2 =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId2, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId2, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
     // Act - Start both requests concurrently
     var response1 = commandHandler.handleRequest(request1, executionContext).block();
@@ -182,7 +183,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     assertNotNull(response1, "First response should not be null");
     assertNotNull(response2, "Second response should not be null");
     assertNotEquals(
-        response1.eventId(), response2.eventId(), "Each request should have unique event ID");
+        response1.requestId(), response2.requestId(), "Each request should have unique event ID");
     assertEquals(
         projectId1, response1.projectId(), "First response should have correct project ID");
     assertEquals(
@@ -211,7 +212,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     Mockito.when(executionContext.userId()).thenReturn(userId);
     var request =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
     // Act & Assert - Measure response time
     long startTime = System.currentTimeMillis();
@@ -231,9 +232,9 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         repositoryCoordinates,
         response.repositoryCoordinates(),
         "Should return correct repository coordinates");
-    assertNotNull(response.eventId(), "Event ID should be provided immediately");
+    assertNotNull(response.requestId(), "Event ID should be provided immediately");
 
-    logger.info("Command returned in {}ms with event ID: {}", responseTime, response.eventId());
+    logger.info("Command returned in {}ms with event ID: {}", responseTime, response.requestId());
 
     logger.info("Successfully verified async command handler returns immediately");
   }
@@ -250,7 +251,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     Mockito.when(executionContext.userId()).thenReturn(userId);
     var request =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
     // Act
     var response = commandHandler.handleRequest(request, executionContext).block();
@@ -262,7 +263,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         repositoryCoordinates,
         response.repositoryCoordinates(),
         "Should return correct repository coordinates");
-    assertNotNull(response.eventId(), "Event ID should not be null");
+    assertNotNull(response.requestId(), "Event ID should not be null");
 
     logger.info("Successfully verified command handler integration");
   }
@@ -279,7 +280,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     Mockito.when(executionContext.userId()).thenReturn(userId);
     var request =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+            RequestId.generate(), projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
     logger.info("Starting async processing test with reasonable timeout");
 
@@ -287,7 +288,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
     var response = commandHandler.handleRequest(request, executionContext).block();
     assertNotNull(response, "Response should not be null");
 
-    logger.info("Async command returned immediately with event ID: {}", response.eventId());
+    logger.info("Async command returned immediately with event ID: {}", response.requestId());
 
     // Wait for a reasonable amount of time based on sync test performance (15 seconds)
     logger.info("Waiting up to 15 seconds for async processing to complete...");

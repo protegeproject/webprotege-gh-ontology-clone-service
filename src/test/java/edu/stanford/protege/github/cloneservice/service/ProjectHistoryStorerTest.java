@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.webprotege.common.BlobLocation;
+import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.revision.Revision;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,12 +32,14 @@ class ProjectHistoryStorerTest {
   @Mock private Revision revision1;
 
   private BlobLocation testBlobLocation;
+  private ProjectId projectId;
 
   @BeforeEach
   void setUp() {
     projectHistoryStorer =
         new ProjectHistoryStorer(projectHistoryConverter, projectHistoryDocumentStorer);
     testBlobLocation = new BlobLocation("test-bucket", "test-object");
+    projectId = ProjectId.generate();
   }
 
   @Test
@@ -52,7 +55,7 @@ class ProjectHistoryStorerTest {
 
     // Act
     try {
-      var result = projectHistoryStorer.storeProjectHistory(projectHistory);
+      var result = projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
 
       // Assert
       assertEquals(testBlobLocation, result);
@@ -77,7 +80,7 @@ class ProjectHistoryStorerTest {
 
     // Act
     try {
-      var result = projectHistoryStorer.storeProjectHistory(emptyProjectHistory);
+      var result = projectHistoryStorer.storeProjectHistory(projectId, emptyProjectHistory);
 
       // Assert
       assertEquals(testBlobLocation, result);
@@ -102,7 +105,7 @@ class ProjectHistoryStorerTest {
 
     // Act
     try {
-      var result = projectHistoryStorer.storeProjectHistory(projectHistory);
+      var result = projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
 
       // Assert
       assertEquals(testBlobLocation, result);
@@ -127,7 +130,7 @@ class ProjectHistoryStorerTest {
 
     // Act
     try {
-      projectHistoryStorer.storeProjectHistory(projectHistory);
+      projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
 
       // Assert
       verify(projectHistoryDocumentStorer).storeDocument(any());
@@ -151,7 +154,7 @@ class ProjectHistoryStorerTest {
 
     // Act
     try {
-      projectHistoryStorer.storeProjectHistory(projectHistory);
+      projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
 
       // Assert
       verify(projectHistoryConverter).convertProjectHistoryToRevisions(projectHistory);

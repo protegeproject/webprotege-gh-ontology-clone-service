@@ -133,7 +133,8 @@ class MinioProjectHistoryDocumentStorerTest {
     var exception =
         assertThrows(StorageException.class, () -> documentStorer.storeDocument(documentFile));
 
-    assertEquals("Problem writing revision history document to storage", exception.getMessage());
+    assertTrue(
+        exception.getMessage().startsWith("Problem writing revision history document to storage"));
     assertInstanceOf(IOException.class, exception.getCause());
   }
 

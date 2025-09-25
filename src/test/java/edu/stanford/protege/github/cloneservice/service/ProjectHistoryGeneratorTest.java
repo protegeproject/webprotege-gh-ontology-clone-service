@@ -70,7 +70,8 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(projectHistory);
-    when(projectHistoryStorer.storeProjectHistory(projectHistory)).thenReturn(testBlobLocation);
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(projectHistory)))
+        .thenReturn(testBlobLocation);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
         mockedFactory =
@@ -96,7 +97,7 @@ class ProjectHistoryGeneratorTest {
       assertEquals(testBlobLocation, result);
       verify(gitHubRepository).initialize();
       verify(ontologyHistoryAnalyzer).getCommitHistory(targetOntologyFile, gitHubRepository);
-      verify(projectHistoryStorer).storeProjectHistory(projectHistory);
+      verify(projectHistoryStorer).storeProjectHistory(eq(testProjectId), eq(projectHistory));
     }
   }
 
@@ -135,7 +136,7 @@ class ProjectHistoryGeneratorTest {
                       testUserId, testProjectId, repositoryCoordinates, targetOntologyFile));
 
       assertEquals(expectedException, exception);
-      verify(projectHistoryStorer, never()).storeProjectHistory(any());
+      verify(projectHistoryStorer, never()).storeProjectHistory(any(), any());
     }
   }
 
@@ -150,7 +151,8 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(projectHistory);
-    when(projectHistoryStorer.storeProjectHistory(projectHistory)).thenThrow(expectedException);
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(projectHistory)))
+        .thenThrow(expectedException);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
         mockedFactory =
@@ -189,7 +191,8 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(projectHistory);
-    when(projectHistoryStorer.storeProjectHistory(projectHistory)).thenReturn(testBlobLocation);
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(projectHistory)))
+        .thenReturn(testBlobLocation);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
         mockedFactory =
@@ -225,7 +228,8 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(projectHistory);
-    when(projectHistoryStorer.storeProjectHistory(projectHistory)).thenReturn(testBlobLocation);
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(projectHistory)))
+        .thenReturn(testBlobLocation);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
         mockedFactory =
@@ -265,7 +269,7 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(emptyProjectHistory);
-    when(projectHistoryStorer.storeProjectHistory(emptyProjectHistory))
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(emptyProjectHistory)))
         .thenReturn(testBlobLocation);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
@@ -290,7 +294,7 @@ class ProjectHistoryGeneratorTest {
 
       // Assert
       assertEquals(testBlobLocation, result);
-      verify(projectHistoryStorer).storeProjectHistory(emptyProjectHistory);
+      verify(projectHistoryStorer).storeProjectHistory(eq(testProjectId), eq(emptyProjectHistory));
     }
   }
 
@@ -304,7 +308,8 @@ class ProjectHistoryGeneratorTest {
     when(ontologyHistoryAnalyzer.getCommitHistory(
             eq(targetOntologyFile), any(GitHubRepository.class)))
         .thenReturn(projectHistory);
-    when(projectHistoryStorer.storeProjectHistory(projectHistory)).thenReturn(testBlobLocation);
+    when(projectHistoryStorer.storeProjectHistory(eq(testProjectId), eq(projectHistory)))
+        .thenReturn(testBlobLocation);
 
     try (MockedStatic<edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory>
         mockedFactory =
@@ -327,7 +332,7 @@ class ProjectHistoryGeneratorTest {
 
       // Assert
       verify(ontologyHistoryAnalyzer).getCommitHistory(targetOntologyFile, gitHubRepository);
-      verify(projectHistoryStorer).storeProjectHistory(projectHistory);
+      verify(projectHistoryStorer).storeProjectHistory(eq(testProjectId), eq(projectHistory));
     }
   }
 }

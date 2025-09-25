@@ -8,6 +8,7 @@ import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.ProjectId;
+import edu.stanford.protege.webprotege.common.RequestId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.EventDispatcher;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
@@ -52,7 +53,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
 
     testRequest =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            testProjectId, repositoryCoordinates, testTargetOntologyFile);
+            RequestId.generate(), testProjectId, repositoryCoordinates, testTargetOntologyFile);
   }
 
   @Test
@@ -70,7 +71,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     assertNotNull(response);
     assertEquals(testProjectId, response.projectId());
     assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-    assertNotNull(response.eventId(), "Event ID should be generated");
+    assertNotNull(response.requestId(), "Event ID should be generated");
 
     // Verify the execution context was accessed
     verify(executionContext).userId();
@@ -85,7 +86,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     var specificTargetFile = new RelativeFilePath("specific-ontology.ttl");
     var specificRequest =
         new CreateProjectHistoryFromGitHubRepoRequest(
-            specificProjectId, repositoryCoordinates, specificTargetFile);
+            RequestId.generate(), specificProjectId, repositoryCoordinates, specificTargetFile);
 
     when(executionContext.userId()).thenReturn(specificUserId);
 
@@ -97,7 +98,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     assertNotNull(response);
     assertEquals(specificProjectId, response.projectId());
     assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-    assertNotNull(response.eventId());
+    assertNotNull(response.requestId());
     verify(executionContext).userId();
   }
 
