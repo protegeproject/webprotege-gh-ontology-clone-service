@@ -99,7 +99,8 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
             projectHistoryImportExecutor)
         .whenComplete(
             (documentLocation, throwable) ->
-                handleCompletion(documentLocation, throwable, eventId));
+                handleCompletion(
+                    documentLocation, throwable, eventId, projectId, repositoryCoordinates));
   }
 
   private CompletableFuture<GitHubRepository> cloneRepository(
@@ -228,10 +229,16 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
   }
 
   private void handleCompletion(
-      BlobLocation documentLocation, Throwable throwable, EventId eventId) {
-
+      BlobLocation documentLocation,
+      Throwable throwable,
+      EventId eventId,
+      ProjectId projectId,
+      RepositoryCoordinates repositoryCoordinates) {
     if (throwable != null) {
-      // TODO: Clean up here
+      logger.error(
+          "Async processing failed for event {}: {}", eventId, throwable.getMessage(), throwable);
+      fireRequestFailed(eventId, projectId, repositoryCoordinates, throwable);
+      // TODO: Clean up here - remove temporary directories, etc.
     }
   }
 
@@ -306,5 +313,15 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
     eventDispatcher.dispatchEvent(
         new GitHubProjectHistoryStoreSucceededEvent(
             eventId, projectId, repositoryCoordinates, projectHistoryLocation));
+  }
+
+  private void fireRequestFailed(
+      EventId eventId,
+      ProjectId projectId,
+      RepositoryCoordinates repositoryCoordinates,
+      Throwable t) {
+    eventDispatcher.dispatchEvent(
+        new GitHubCloneRequestFailedEvent(
+            eventId, projectId, repositoryCoordinates, t.getMessage()));
   }
 }
