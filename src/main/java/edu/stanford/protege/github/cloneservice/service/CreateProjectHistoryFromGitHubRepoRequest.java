@@ -8,9 +8,11 @@ import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.Request;
+import edu.stanford.protege.webprotege.common.RequestId;
 
 @JsonTypeName(CHANNEL)
 public record CreateProjectHistoryFromGitHubRepoRequest(
+    @JsonProperty("requestId") RequestId requestId,
     @JsonProperty("projectId") ProjectId projectId,
     @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates,
     @JsonProperty("targetOntologyFile") RelativeFilePath targetOntologyFile)
