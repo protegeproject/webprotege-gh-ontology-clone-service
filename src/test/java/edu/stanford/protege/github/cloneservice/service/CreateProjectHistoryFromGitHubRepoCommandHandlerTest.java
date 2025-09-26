@@ -62,7 +62,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         testTargetOntologyFile = new RelativeFilePath("ontology.owl");
 
         testRequest = new CreateProjectHistoryFromGitHubRepoRequest(
-                RequestId.generate(), testProjectId, repositoryCoordinates, testTargetOntologyFile);
+                testProjectId, repositoryCoordinates, testTargetOntologyFile);
     }
 
     @Test
@@ -80,7 +80,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         assertNotNull(response);
         assertEquals(testProjectId, response.projectId());
         assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-        assertNotNull(response.requestId(), "Event ID should be generated");
+        assertNotNull(response.eventId(), "Event ID should be generated");
 
         // Verify the execution context was accessed
         verify(executionContext).userId();
@@ -94,7 +94,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         var specificUserId = UserId.valueOf("specific-user");
         var specificTargetFile = new RelativeFilePath("specific-ontology.ttl");
         var specificRequest = new CreateProjectHistoryFromGitHubRepoRequest(
-                RequestId.generate(), specificProjectId, repositoryCoordinates, specificTargetFile);
+                specificProjectId, repositoryCoordinates, specificTargetFile);
 
         when(executionContext.userId()).thenReturn(specificUserId);
 
@@ -106,7 +106,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         assertNotNull(response);
         assertEquals(specificProjectId, response.projectId());
         assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-        assertNotNull(response.requestId());
+        assertNotNull(response.eventId());
         verify(executionContext).userId();
     }
 
