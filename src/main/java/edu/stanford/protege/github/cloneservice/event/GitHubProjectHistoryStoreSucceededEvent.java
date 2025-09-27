@@ -11,14 +11,12 @@ import edu.stanford.protege.webprotege.common.*;
  * @param operationId The correlated operation ID for tracking the operation
  * @param eventId The correlation event ID for tracking the operation
  * @param repositoryCoordinates The coordinates of the repository from which history was imported
- * @param projectHistoryLocation The location where the project history is stored
  */
 public record GitHubProjectHistoryStoreSucceededEvent(
         ProjectId projectId,
         CreateProjectHistoryFromGitHubRepoOperationId operationId,
         EventId eventId,
-        RepositoryCoordinates repositoryCoordinates,
-        BlobLocation projectHistoryLocation)
+        RepositoryCoordinates repositoryCoordinates)
         implements ProjectEvent {
 
     private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryStoreSucceededEvent";

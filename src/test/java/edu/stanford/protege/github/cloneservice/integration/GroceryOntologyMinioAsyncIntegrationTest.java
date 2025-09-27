@@ -8,7 +8,6 @@ import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoCommandHandler;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoRequest;
 import edu.stanford.protege.webprotege.common.ProjectId;
-import edu.stanford.protege.webprotege.common.RequestId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import io.minio.GetObjectArgs;
@@ -111,8 +110,8 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
-        var request = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
         logger.info(
                 "Test configuration - User: {}, Project: {}, Repository: {}, Branch: {}, Target file: {}",
@@ -160,10 +159,10 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
 
-        var request1 = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId1, repositoryCoordinates, ONTOLOGY_FILE_PATH);
-        var request2 = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId2, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request1 =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId1, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request2 =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId2, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act - Start both requests concurrently
         var response1 = commandHandler.handleRequest(request1, executionContext).block();
@@ -196,8 +195,8 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
-        var request = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act & Assert - Measure response time
         long startTime = System.currentTimeMillis();
@@ -231,8 +230,8 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
-        var request = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act
         var response = commandHandler.handleRequest(request, executionContext).block();
@@ -258,8 +257,8 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
-        var request = new CreateProjectHistoryFromGitHubRepoRequest(
-                projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+        var request =
+                new CreateProjectHistoryFromGitHubRepoRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
 
         logger.info("Starting async processing test with reasonable timeout");
 
