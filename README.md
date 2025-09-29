@@ -17,15 +17,6 @@ This service enables teams to import existing ontology projects from GitHub into
 - **Cloud Storage**: Stores generated revision documents in MinIO-compatible object storage
 - **Message-Driven Architecture**: Processes requests via RabbitMQ for scalable async operations
 
-## Workflow
-
-1. **Request Processing**: Receives GitHub repository analysis requests via RabbitMQ
-2. **Repository Navigation**: Traverses Git commit history backwards from HEAD
-4. **Change Detection**: Compares consecutive ontology versions to identify axiom-level differences
-5. **Revision Generation**: Converts changes into WebProtégé revision document format
-6. **Storage**: Stores the generated revision document in MinIO cloud storage
-7. **Response**: Returns storage location and metadata via RabbitMQ response queue
-
 ## Requirements
 
 ### Runtime Requirements
@@ -45,11 +36,17 @@ This service enables teams to import existing ontology projects from GitHub into
 # Clean and compile
 mvn clean compile
 
-# Run tests
+# Run all tests (unit + integration)
 mvn test
+
+# Run only unit tests (excludes integration tests)
+mvn test -Dtest="!*Integration*"
 
 # Build the application
 mvn clean package
+
+# Build with unit tests only (CI/CD pattern)
+mvn --batch-mode clean package -Dtest="!*Integration*"
 
 # Skip tests during build
 mvn clean package -DskipTests
@@ -81,3 +78,17 @@ mvn clean package
 # Manual Docker build
 docker build -f Dockerfile --build-arg JAR_FILE=webprotege-gh-ontology-clone-service-1.0.0.jar -t protegeproject/webprotege-gh-ontology-clone-service:1.0.0 .
 ```
+
+### Testing Strategy
+
+- **Unit Tests**: Fast, isolated tests that run in CI/CD pipeline
+- **Integration Tests**: Slower tests that require external dependencies (Docker containers)
+  - Excluded from CI/CD using `-Dtest="!*Integration*"` pattern
+  - Should be run locally during development: `mvn test`
+
+### Local Development vs CI/CD
+
+| Environment | Command | Tests Run | Duration |
+|-------------|---------|-----------|----------|
+| Local Dev | `mvn test` | All (unit + integration) | ~30-60 seconds |
+| CI/CD | `mvn test -Dtest="!*Integration*"` | Unit tests only | ~10-15 seconds |
