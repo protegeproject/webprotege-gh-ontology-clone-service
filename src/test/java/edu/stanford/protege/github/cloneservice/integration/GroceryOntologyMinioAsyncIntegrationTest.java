@@ -132,9 +132,9 @@ class GroceryOntologyMinioAsyncIntegrationTest {
                 repositoryCoordinates,
                 response.repositoryCoordinates(),
                 "Should return correct repository coordinates");
-        assertNotNull(response.eventId(), "Event ID should not be null");
+        assertNotNull(response.operationId(), "Event ID should not be null");
 
-        logger.info("Received async response with event ID: {}", response.eventId());
+        logger.info("Received async response with event ID: {}", response.operationId());
 
         // Wait for async processing to complete
         logger.info("Waiting for async processing to complete...");
@@ -171,7 +171,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Assert - Verify both responses
         assertNotNull(response1, "First response should not be null");
         assertNotNull(response2, "Second response should not be null");
-        assertNotEquals(response1.eventId(), response2.eventId(), "Each request should have unique event ID");
+        assertNotEquals(response1.operationId(), response2.operationId(), "Each request should have unique event ID");
         assertEquals(projectId1, response1.projectId(), "First response should have correct project ID");
         assertEquals(projectId2, response2.projectId(), "Second response should have correct project ID");
 
@@ -214,9 +214,9 @@ class GroceryOntologyMinioAsyncIntegrationTest {
                 repositoryCoordinates,
                 response.repositoryCoordinates(),
                 "Should return correct repository coordinates");
-        assertNotNull(response.eventId(), "Event ID should be provided immediately");
+        assertNotNull(response.operationId(), "Event ID should be provided immediately");
 
-        logger.info("Command returned in {}ms with event ID: {}", responseTime, response.eventId());
+        logger.info("Command returned in {}ms with event ID: {}", responseTime, response.operationId());
 
         logger.info("Successfully verified async command handler returns immediately");
     }
@@ -243,7 +243,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
                 repositoryCoordinates,
                 response.repositoryCoordinates(),
                 "Should return correct repository coordinates");
-        assertNotNull(response.eventId(), "Event ID should not be null");
+        assertNotNull(response.operationId(), "Event ID should not be null");
 
         logger.info("Successfully verified command handler integration");
     }
@@ -266,7 +266,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var response = commandHandler.handleRequest(request, executionContext).block();
         assertNotNull(response, "Response should not be null");
 
-        logger.info("Async command returned immediately with event ID: {}", response.eventId());
+        logger.info("Async command returned immediately with event ID: {}", response.operationId());
 
         // Wait for a reasonable amount of time based on sync test performance (15 seconds)
         logger.info("Waiting up to 15 seconds for async processing to complete...");

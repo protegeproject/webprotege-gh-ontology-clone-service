@@ -79,7 +79,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         assertNotNull(response);
         assertEquals(testProjectId, response.projectId());
         assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-        assertNotNull(response.eventId(), "Event ID should be generated");
+        assertNotNull(response.operationId(), "Event ID should be generated");
 
         // Verify the execution context was accessed
         verify(executionContext).userId();
@@ -105,7 +105,7 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         assertNotNull(response);
         assertEquals(specificProjectId, response.projectId());
         assertEquals(repositoryCoordinates, response.repositoryCoordinates());
-        assertNotNull(response.eventId());
+        assertNotNull(response.operationId());
         verify(executionContext).userId();
     }
 
@@ -124,7 +124,8 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         // Assert - event IDs should be different
         assertNotNull(response1);
         assertNotNull(response2);
-        assertNotEquals(response1.eventId(), response2.eventId(), "Each request should generate a unique event ID");
+        assertNotEquals(
+                response1.operationId(), response2.operationId(), "Each request should generate a unique event ID");
 
         // But project and repository data should be the same
         assertEquals(response1.projectId(), response2.projectId());
