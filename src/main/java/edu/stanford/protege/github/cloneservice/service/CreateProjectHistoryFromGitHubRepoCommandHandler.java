@@ -66,7 +66,6 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
             CreateProjectHistoryFromGitHubRepoRequest request, ExecutionContext executionContext) {
 
         var operationId = CreateProjectHistoryFromGitHubRepoOperationId.generate();
-        var eventId = EventId.generate(); // Overall event ID
 
         var userId = executionContext.userId();
 
@@ -74,91 +73,91 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
         var repositoryCoordinates = request.repositoryCoordinates();
         var targetOntologyFile = request.targetOntologyFile();
 
-        startAsyncProcessing(userId, projectId, operationId, eventId, repositoryCoordinates, targetOntologyFile);
+        startAsyncProcessing(userId, projectId, operationId, repositoryCoordinates, targetOntologyFile);
 
-        return Mono.just(
-                new CreateProjectHistoryFromGitHubRepoResponse(projectId, operationId, eventId, repositoryCoordinates));
+        return Mono.just(new CreateProjectHistoryFromGitHubRepoResponse(projectId, operationId, repositoryCoordinates));
     }
 
     private void startAsyncProcessing(
             UserId userId,
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepoOperationId operationId,
-            EventId eventId,
             RepositoryCoordinates repositoryCoordinates,
             RelativeFilePath targetOntologyFile) {
 
         cloneRepositoryAsync(userId, projectId, operationId, repositoryCoordinates)
                 .whenComplete((repository, t) -> {
-                    var subEventId = EventId.generate();
                     if (t != null) {
+                        var eventId = EventId.generate();
                         logger.error(
                                 "{} {} {} Failed to clone GitHub repository {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 repositoryCoordinates.repositoryUrl(),
                                 t);
-                        fireCloneFailed(projectId, operationId, subEventId, repositoryCoordinates, t);
+                        fireCloneFailed(projectId, operationId, eventId, repositoryCoordinates, t);
                     } else {
+                        var eventId = EventId.generate();
                         logger.info(
                                 "{} {} {} Successfully cloned repository {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 repositoryCoordinates.repositoryUrl());
-                        fireCloneSucceeded(projectId, operationId, subEventId, repositoryCoordinates, repository);
+                        fireCloneSucceeded(projectId, operationId, eventId, repositoryCoordinates, repository);
                     }
                 })
                 .thenApplyAsync(
                         repository -> extractOntologyChanges(projectId, operationId, targetOntologyFile, repository),
                         projectHistoryImportExecutor)
                 .whenComplete((projectHistory, t) -> {
-                    var subEventId = EventId.generate();
                     if (t != null) {
+                        var eventId = EventId.generate();
                         logger.error(
                                 "{} {} {} Failed to extract ontology changes from file {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 targetOntologyFile,
                                 t);
-                        fireImportFailed(projectId, operationId, subEventId, repositoryCoordinates, t);
+                        fireImportFailed(projectId, operationId, eventId, repositoryCoordinates, t);
                     } else {
+                        var eventId = EventId.generate();
                         logger.info(
                                 "{} {} {} Successfully extracted ontology changes from file {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 targetOntologyFile);
-                        fireImportSucceeded(projectId, operationId, subEventId, repositoryCoordinates);
+                        fireImportSucceeded(projectId, operationId, eventId, repositoryCoordinates);
                     }
                 })
                 .thenApplyAsync(
                         projectHistory -> storeProjectHistory(projectId, operationId, projectHistory),
                         projectHistoryImportExecutor)
                 .whenComplete((documentLocation, t) -> {
-                    var subEventId = EventId.generate();
                     if (t != null) {
+                        var eventId = EventId.generate();
                         logger.error(
                                 "{} {} {} Failed to store project history at location {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 documentLocation,
                                 t);
-                        fireStoreFailed(projectId, operationId, subEventId, repositoryCoordinates, t);
-                        fireCreateProjectHistoryFromGitHubRepoFailed(projectId, operationId, eventId, t);
+                        fireStoreFailed(projectId, operationId, eventId, repositoryCoordinates, t);
+                        fireCreateProjectHistoryFromGitHubRepoFailed(operationId, projectId, t);
                     } else {
+                        var eventId = EventId.generate();
                         logger.info(
                                 "{} {} {} Successfully stored project history at location {}",
                                 projectId,
                                 operationId,
-                                subEventId,
+                                eventId,
                                 documentLocation);
-                        fireStoreSucceeded(projectId, operationId, subEventId, repositoryCoordinates);
-                        fireCreateProjectHistoryFromGitHubRepoSucceeded(
-                                projectId, operationId, eventId, documentLocation);
+                        fireStoreSucceeded(projectId, operationId, eventId, repositoryCoordinates);
+                        fireCreateProjectHistoryFromGitHubRepoSucceeded(operationId, projectId, documentLocation);
                     }
                 });
     }
@@ -288,17 +287,16 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoFailed(
-            ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
-            EventId eventId,
-            Throwable t) {
-        eventDispatcher.dispatchEvent(
-                new CreateProjectHistoryFromGitHubRepoFailedEvent(projectId, operationId, eventId, t.getMessage()));
+            CreateProjectHistoryFromGitHubRepoOperationId operationId, ProjectId projectId, Throwable t) {
+        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepoFailedEvent(
+                EventId.generate(), operationId, projectId, t.getMessage()));
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoSucceeded(
-            ProjectId projectId,
             CreateProjectHistoryFromGitHubRepoOperationId operationId,
-            EventId eventId,
-            BlobLocation documentLocation) {}
+            ProjectId projectId,
+            BlobLocation documentLocation) {
+        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepoSucceededEvent(
+                EventId.generate(), operationId, projectId, documentLocation));
+    }
 }
