@@ -71,9 +71,9 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
         var projectId = request.projectId();
         var repositoryCoordinates = request.repositoryCoordinates();
-        var targetOntologyFile = request.targetOntologyFile();
+        var rootOntologyPath = request.rootOntologyPath();
 
-        startAsyncProcessing(userId, projectId, operationId, repositoryCoordinates, targetOntologyFile);
+        startAsyncProcessing(userId, projectId, operationId, repositoryCoordinates, rootOntologyPath);
 
         return Mono.just(new CreateProjectHistoryFromGitHubRepoResponse(projectId, operationId, repositoryCoordinates));
     }
@@ -83,7 +83,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepoOperationId operationId,
             RepositoryCoordinates repositoryCoordinates,
-            RelativeFilePath targetOntologyFile) {
+            RelativeFilePath rootOntologyPath) {
 
         cloneRepositoryAsync(userId, projectId, operationId, repositoryCoordinates)
                 .whenComplete((repository, t) -> {
@@ -109,7 +109,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
                     }
                 })
                 .thenApplyAsync(
-                        repository -> extractOntologyChanges(projectId, operationId, targetOntologyFile, repository),
+                        repository -> extractOntologyChanges(projectId, operationId, rootOntologyPath, repository),
                         projectHistoryImportExecutor)
                 .whenComplete((projectHistory, t) -> {
                     if (t != null) {
@@ -119,7 +119,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
                                 projectId,
                                 operationId,
                                 eventId,
-                                targetOntologyFile,
+                                rootOntologyPath,
                                 t);
                         fireImportFailed(projectId, operationId, eventId, repositoryCoordinates, t);
                     } else {
@@ -129,7 +129,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
                                 projectId,
                                 operationId,
                                 eventId,
-                                targetOntologyFile);
+                                rootOntologyPath);
                         fireImportSucceeded(projectId, operationId, eventId, repositoryCoordinates);
                     }
                 })
@@ -188,15 +188,15 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
     private List<OntologyCommitChange> extractOntologyChanges(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepoOperationId operationId,
-            RelativeFilePath targetOntologyFile,
+            RelativeFilePath rootOntologyPath,
             GitHubRepository repository) {
         try {
             logger.info(
                     "{} {} Starting ontology change extraction from file {}",
                     projectId,
                     operationId,
-                    targetOntologyFile);
-            return ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
+                    rootOntologyPath);
+            return ontologyHistoryAnalyzer.getCommitHistory(rootOntologyPath, repository);
         } catch (OntologyComparisonException e) {
             throw new RuntimeException("Failed to extract ontology change", e);
         }

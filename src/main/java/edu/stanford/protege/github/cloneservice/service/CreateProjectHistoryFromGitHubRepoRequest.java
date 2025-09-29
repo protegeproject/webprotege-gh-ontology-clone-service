@@ -13,7 +13,7 @@ import edu.stanford.protege.webprotege.common.Request;
 public record CreateProjectHistoryFromGitHubRepoRequest(
         @JsonProperty("projectId") ProjectId projectId,
         @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates,
-        @JsonProperty("targetOntologyFile") RelativeFilePath targetOntologyFile)
+        @JsonProperty("rootOntologyPath") RelativeFilePath rootOntologyPath)
         implements Request<CreateProjectHistoryFromGitHubRepoResponse> {
 
     public static final String CHANNEL = "webprotege.github.CreateProjectHistoryFromGitHubRepo";

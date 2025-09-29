@@ -46,7 +46,7 @@ public class ProjectHistoryGenerator {
      * @param userId the unique identifier of the WebProtege user
      * @param projectId the unique identifier of the ontology project in WebProtege
      * @param repositoryCoordinates the GitHub repository specification
-     * @param targetOntologyFile the ontology file in the repository to generate the history for
+     * @param rootOntologyPath the ontology file in the repository to generate the history for
      * @return a {@link BlobLocation} indicating where the project history document has been stored
      * @throws StorageException if an error occurs during repository access, history analysis, or
      *     storage operations. This may include network issues, authentication failures, file access
@@ -56,11 +56,11 @@ public class ProjectHistoryGenerator {
             UserId userId,
             ProjectId projectId,
             RepositoryCoordinates repositoryCoordinates,
-            RelativeFilePath targetOntologyFile) {
+            RelativeFilePath rootOntologyPath) {
         try {
             var localCloneDirectory = getLocalCloneDirectory(userId, projectId);
-            var repository = getGitHubRepository(repositoryCoordinates, localCloneDirectory, targetOntologyFile);
-            var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(targetOntologyFile, repository);
+            var repository = getGitHubRepository(repositoryCoordinates, localCloneDirectory, rootOntologyPath);
+            var projectHistory = ontologyHistoryAnalyzer.getCommitHistory(rootOntologyPath, repository);
             var projectHistoryLocation = projectHistoryStorer.storeProjectHistory(projectId, projectHistory);
             logger.info("Stored project history document at: {}", projectHistoryLocation);
             return projectHistoryLocation;
@@ -75,7 +75,7 @@ public class ProjectHistoryGenerator {
     }
 
     private GitHubRepository getGitHubRepository(
-            RepositoryCoordinates repositoryCoordinates, Path localCloneDirectory, RelativeFilePath targetOntologyFile)
+            RepositoryCoordinates repositoryCoordinates, Path localCloneDirectory, RelativeFilePath rootOntologyPath)
             throws GitHubNavigatorException {
         var repository = GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
                 .localWorkingDirectory(localCloneDirectory)
