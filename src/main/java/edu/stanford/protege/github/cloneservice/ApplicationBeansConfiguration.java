@@ -19,7 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ApplicationBeansConfiguration {
 
     @Bean
-    CreateProjectHistoryFromGitHubRepositoryCommandHandler createProjectHistoryFromGitHubRepoCommandHandler(
+    CreateProjectHistoryFromGitHubRepositoryCommandHandler createProjectHistoryFromGitHubRepositoryCommandHandler(
             OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
             ProjectHistoryStorer projectHistoryStorer,
             EventDispatcher eventDispatcher,

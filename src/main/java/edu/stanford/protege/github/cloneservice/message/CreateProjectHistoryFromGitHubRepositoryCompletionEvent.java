@@ -1,4 +1,4 @@
-package edu.stanford.protege.github.cloneservice.event;
+package edu.stanford.protege.github.cloneservice.message;
 
 /**
  * Sealed interface representing the completion of a GitHub repository clone operation.

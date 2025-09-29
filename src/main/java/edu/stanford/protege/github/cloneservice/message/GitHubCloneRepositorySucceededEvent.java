@@ -1,5 +1,6 @@
-package edu.stanford.protege.github.cloneservice.event;
+package edu.stanford.protege.github.cloneservice.message;
 
+import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.EventId;
@@ -7,23 +8,23 @@ import edu.stanford.protege.webprotege.common.ProjectEvent;
 import edu.stanford.protege.webprotege.common.ProjectId;
 
 /**
- * Event dispatched when GitHub clone service fails due to other triggering errors.
+ * Event dispatched when a GitHub repository is successfully cloned.
  *
- * @param projectId The project for which the repository clone failed
+ * @param projectId The project for which the repository was cloned
  * @param operationId The correlated operation ID for tracking the operation
  * @param eventId The correlation event ID for tracking the operation
- * @param repositoryCoordinates The coordinates of the repository that failed to clone
- * @param errorMessage The error message describing the failure
+ * @param repositoryCoordinates The coordinates of the successfully cloned repository
+ * @param repository The cloned GitHub repository
  */
-public record GitHubCloneRequestFailedEvent(
+public record GitHubCloneRepositorySucceededEvent(
         ProjectId projectId,
         CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
         EventId eventId,
         RepositoryCoordinates repositoryCoordinates,
-        String errorMessage)
+        GitHubRepository repository)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRequestFailed";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRepositorySucceeded";
 
     @Override
     public String getChannel() {

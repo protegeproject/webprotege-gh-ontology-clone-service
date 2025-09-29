@@ -1,6 +1,6 @@
-package edu.stanford.protege.github.cloneservice.service;
+package edu.stanford.protege.github.cloneservice.message;
 
-import static edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryRequest.CHANNEL;
+import static edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest.CHANNEL;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
