@@ -26,52 +26,52 @@ import java.util.Objects;
  */
 public record RelativeFilePath(@JsonProperty("path") String value) {
 
-  public RelativeFilePath {
-    Objects.requireNonNull(value, "File path cannot be null");
-    if (value.trim().isEmpty()) {
-      throw new IllegalArgumentException("File path cannot be empty");
+    public RelativeFilePath {
+        Objects.requireNonNull(value, "File path cannot be null");
+        if (value.trim().isEmpty()) {
+            throw new IllegalArgumentException("File path cannot be empty");
+        }
+        if (value.startsWith("/") || value.startsWith("\\")) {
+            throw new IllegalArgumentException("File path must be relative, not absolute");
+        }
+        if (value.contains("..")) {
+            throw new IllegalArgumentException("File path cannot contain path traversal (..)");
+        }
+        if (value.contains("\\")) {
+            throw new IllegalArgumentException("File path must use forward slashes (/)");
+        }
     }
-    if (value.startsWith("/") || value.startsWith("\\")) {
-      throw new IllegalArgumentException("File path must be relative, not absolute");
+
+    /**
+     * Returns the file name (last component of the path).
+     *
+     * @return the file name
+     */
+    public String getFileName() {
+        return Paths.get(value).getFileName().toString();
     }
-    if (value.contains("..")) {
-      throw new IllegalArgumentException("File path cannot contain path traversal (..)");
+
+    /**
+     * Returns the directory path (all components except the last).
+     *
+     * @return the directory path, or empty string if file is in root
+     */
+    public String getDirectory() {
+        Path path = Paths.get(value);
+        Path parent = path.getParent();
+        return parent != null ? parent.toString() : "";
     }
-    if (value.contains("\\")) {
-      throw new IllegalArgumentException("File path must use forward slashes (/)");
+
+    /**
+     * Returns the normalized path as a Path object.
+     *
+     * @return the path as a Path object
+     */
+    public Path asPath() {
+        return Paths.get(value);
     }
-  }
 
-  /**
-   * Returns the file name (last component of the path).
-   *
-   * @return the file name
-   */
-  public String getFileName() {
-    return Paths.get(value).getFileName().toString();
-  }
-
-  /**
-   * Returns the directory path (all components except the last).
-   *
-   * @return the directory path, or empty string if file is in root
-   */
-  public String getDirectory() {
-    Path path = Paths.get(value);
-    Path parent = path.getParent();
-    return parent != null ? parent.toString() : "";
-  }
-
-  /**
-   * Returns the normalized path as a Path object.
-   *
-   * @return the path as a Path object
-   */
-  public Path asPath() {
-    return Paths.get(value);
-  }
-
-  public String asString() {
-    return value;
-  }
+    public String asString() {
+        return value;
+    }
 }

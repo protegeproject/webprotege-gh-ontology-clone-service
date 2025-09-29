@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties
 public class GitHubCloneServiceApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(GitHubCloneServiceApplication.class, args);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run(GitHubCloneServiceApplication.class, args);
+    }
 }
