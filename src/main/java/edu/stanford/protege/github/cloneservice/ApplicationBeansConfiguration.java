@@ -1,6 +1,6 @@
 package edu.stanford.protege.github.cloneservice;
 
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoCommandHandler;
+import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
 import edu.stanford.protege.github.cloneservice.service.ProjectHistoryStorer;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.ipc.EventDispatcher;
@@ -19,12 +19,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ApplicationBeansConfiguration {
 
     @Bean
-    CreateProjectHistoryFromGitHubRepoCommandHandler createProjectHistoryFromGitHubRepoCommandHandler(
+    CreateProjectHistoryFromGitHubRepositoryCommandHandler createProjectHistoryFromGitHubRepoCommandHandler(
             OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
             ProjectHistoryStorer projectHistoryStorer,
             EventDispatcher eventDispatcher,
             @Qualifier("projectHistoryImportExecutor") Executor projectHistoryImportExecutor) {
-        return new CreateProjectHistoryFromGitHubRepoCommandHandler(
+        return new CreateProjectHistoryFromGitHubRepositoryCommandHandler(
                 ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, projectHistoryImportExecutor);
     }
 

@@ -28,19 +28,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import reactor.core.publisher.Mono;
 
 @WebProtegeHandler
-public class CreateProjectHistoryFromGitHubRepoCommandHandler
+public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
         implements CommandHandler<
-                CreateProjectHistoryFromGitHubRepoRequest, CreateProjectHistoryFromGitHubRepoResponse> {
+        CreateProjectHistoryFromGitHubRepositoryRequest, CreateProjectHistoryFromGitHubRepositoryResponse> {
 
     private static final Logger logger =
-            LoggerFactory.getLogger(CreateProjectHistoryFromGitHubRepoCommandHandler.class);
+            LoggerFactory.getLogger(CreateProjectHistoryFromGitHubRepositoryCommandHandler.class);
 
     private final OntologyHistoryAnalyzer ontologyHistoryAnalyzer;
     private final ProjectHistoryStorer projectHistoryStorer;
     private final EventDispatcher eventDispatcher;
     private final Executor projectHistoryImportExecutor;
 
-    public CreateProjectHistoryFromGitHubRepoCommandHandler(
+    public CreateProjectHistoryFromGitHubRepositoryCommandHandler(
             @Nonnull OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
             @Nonnull ProjectHistoryStorer projectHistoryStorer,
             @Nonnull EventDispatcher eventDispatcher,
@@ -53,19 +53,19 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     @NotNull @Override
     public String getChannelName() {
-        return CreateProjectHistoryFromGitHubRepoRequest.CHANNEL;
+        return CreateProjectHistoryFromGitHubRepositoryRequest.CHANNEL;
     }
 
     @Override
-    public Class<CreateProjectHistoryFromGitHubRepoRequest> getRequestClass() {
-        return CreateProjectHistoryFromGitHubRepoRequest.class;
+    public Class<CreateProjectHistoryFromGitHubRepositoryRequest> getRequestClass() {
+        return CreateProjectHistoryFromGitHubRepositoryRequest.class;
     }
 
     @Override
-    public Mono<CreateProjectHistoryFromGitHubRepoResponse> handleRequest(
-            CreateProjectHistoryFromGitHubRepoRequest request, ExecutionContext executionContext) {
+    public Mono<CreateProjectHistoryFromGitHubRepositoryResponse> handleRequest(
+            CreateProjectHistoryFromGitHubRepositoryRequest request, ExecutionContext executionContext) {
 
-        var operationId = CreateProjectHistoryFromGitHubRepoOperationId.generate();
+        var operationId = CreateProjectHistoryFromGitHubRepositoryOperationId.generate();
 
         var userId = executionContext.userId();
 
@@ -75,13 +75,13 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
         startAsyncProcessing(userId, projectId, operationId, repositoryCoordinates, rootOntologyPath);
 
-        return Mono.just(new CreateProjectHistoryFromGitHubRepoResponse(projectId, operationId, repositoryCoordinates));
+        return Mono.just(new CreateProjectHistoryFromGitHubRepositoryResponse(projectId, operationId, repositoryCoordinates));
     }
 
     private void startAsyncProcessing(
             UserId userId,
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             RepositoryCoordinates repositoryCoordinates,
             RelativeFilePath rootOntologyPath) {
 
@@ -165,7 +165,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
     private CompletableFuture<GitHubRepository> cloneRepositoryAsync(
             UserId userId,
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             RepositoryCoordinates repositoryCoordinates) {
 
         return CompletableFuture.supplyAsync(
@@ -187,7 +187,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private List<OntologyCommitChange> extractOntologyChanges(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             RelativeFilePath rootOntologyPath,
             GitHubRepository repository) {
         try {
@@ -204,7 +204,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private BlobLocation storeProjectHistory(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             List<OntologyCommitChange> projectHistory) {
         try {
             logger.info("{} {} Starting project history store", projectId, operationId);
@@ -230,7 +230,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireCloneFailed(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates,
             Throwable t) {
@@ -240,7 +240,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireCloneSucceeded(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates,
             GitHubRepository repository) {
@@ -250,7 +250,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireImportFailed(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates,
             Throwable t) {
@@ -260,7 +260,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireImportSucceeded(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates) {
         eventDispatcher.dispatchEvent(
@@ -269,7 +269,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireStoreFailed(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates,
             Throwable t) {
@@ -279,7 +279,7 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
 
     private void fireStoreSucceeded(
             ProjectId projectId,
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
             RepositoryCoordinates repositoryCoordinates) {
         eventDispatcher.dispatchEvent(
@@ -287,16 +287,16 @@ public class CreateProjectHistoryFromGitHubRepoCommandHandler
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoFailed(
-            CreateProjectHistoryFromGitHubRepoOperationId operationId, ProjectId projectId, Throwable t) {
-        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepoFailedEvent(
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId, ProjectId projectId, Throwable t) {
+        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepositoryFailedEvent(
                 EventId.generate(), operationId, projectId, t.getMessage()));
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoSucceeded(
-            CreateProjectHistoryFromGitHubRepoOperationId operationId,
+            CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             ProjectId projectId,
             BlobLocation documentLocation) {
-        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepoSucceededEvent(
+        eventDispatcher.dispatchEvent(new CreateProjectHistoryFromGitHubRepositorySucceededEvent(
                 EventId.generate(), operationId, projectId, documentLocation));
     }
 }

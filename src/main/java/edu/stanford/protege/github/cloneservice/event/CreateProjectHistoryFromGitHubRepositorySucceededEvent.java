@@ -1,7 +1,7 @@
 package edu.stanford.protege.github.cloneservice.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoOperationId;
+import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectId;
@@ -14,12 +14,12 @@ import edu.stanford.protege.webprotege.common.ProjectId;
  * @param projectId The project for which the repository clone failed
  * @param documentLocation The location where the project history is stored
  */
-public record CreateProjectHistoryFromGitHubRepoSucceededEvent(
+public record CreateProjectHistoryFromGitHubRepositorySucceededEvent(
         @JsonProperty("eventId") EventId eventId,
-        @JsonProperty("operationId") CreateProjectHistoryFromGitHubRepoOperationId operationId,
+        @JsonProperty("operationId") CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
         @JsonProperty("projectId") ProjectId projectId,
         @JsonProperty("documentLocation") BlobLocation documentLocation)
-        implements CreateProjectHistoryFromGitHubRepoCompletionEvent {
+        implements CreateProjectHistoryFromGitHubRepositoryCompletionEvent {
 
     private static final String CHANNEL = "webprotege.events.projects.CreateProjectHistoryFromGitHubRepoSucceeded";
 

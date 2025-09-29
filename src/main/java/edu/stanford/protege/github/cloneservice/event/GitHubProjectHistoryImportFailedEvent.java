@@ -1,7 +1,7 @@
 package edu.stanford.protege.github.cloneservice.event;
 
 import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepoOperationId;
+import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectEvent;
 import edu.stanford.protege.webprotege.common.ProjectId;
@@ -17,7 +17,7 @@ import edu.stanford.protege.webprotege.common.ProjectId;
  */
 public record GitHubProjectHistoryImportFailedEvent(
         ProjectId projectId,
-        CreateProjectHistoryFromGitHubRepoOperationId operationId,
+        CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
         EventId eventId,
         RepositoryCoordinates repositoryCoordinates,
         String errorMessage)

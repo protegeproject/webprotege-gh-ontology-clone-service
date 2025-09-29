@@ -20,12 +20,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-/** Unit tests for {@link CreateProjectHistoryFromGitHubRepoCommandHandler} */
+/** Unit tests for {@link CreateProjectHistoryFromGitHubRepositoryCommandHandler} */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CreateProjectHistoryFromGitHubRepoCommandHandler Tests")
-class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
+class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
 
-    private CreateProjectHistoryFromGitHubRepoCommandHandler commandHandler;
+    private CreateProjectHistoryFromGitHubRepositoryCommandHandler commandHandler;
 
     @Mock
     private OntologyHistoryAnalyzer ontologyHistoryAnalyzer;
@@ -49,18 +49,18 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
     private UserId testUserId;
     private BlobLocation testBlobLocation;
     private RelativeFilePath testTargetOntologyFile;
-    private CreateProjectHistoryFromGitHubRepoRequest testRequest;
+    private CreateProjectHistoryFromGitHubRepositoryRequest testRequest;
 
     @BeforeEach
     void setUp() {
-        commandHandler = new CreateProjectHistoryFromGitHubRepoCommandHandler(
+        commandHandler = new CreateProjectHistoryFromGitHubRepositoryCommandHandler(
                 ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, executor);
         testProjectId = ProjectId.valueOf("12345678-1234-1234-1234-123456789012");
         testUserId = UserId.valueOf("test-user");
         testBlobLocation = new BlobLocation("test-bucket", "test/path/document.json");
         testTargetOntologyFile = new RelativeFilePath("ontology.owl");
 
-        testRequest = new CreateProjectHistoryFromGitHubRepoRequest(
+        testRequest = new CreateProjectHistoryFromGitHubRepositoryRequest(
                 testProjectId, repositoryCoordinates, testTargetOntologyFile);
     }
 
@@ -71,11 +71,11 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         when(executionContext.userId()).thenReturn(testUserId);
 
         // Act
-        Mono<CreateProjectHistoryFromGitHubRepoResponse> result =
+        Mono<CreateProjectHistoryFromGitHubRepositoryResponse> result =
                 commandHandler.handleRequest(testRequest, executionContext);
 
         // Assert
-        CreateProjectHistoryFromGitHubRepoResponse response = result.block();
+        CreateProjectHistoryFromGitHubRepositoryResponse response = result.block();
         assertNotNull(response);
         assertEquals(testProjectId, response.projectId());
         assertEquals(repositoryCoordinates, response.repositoryCoordinates());
@@ -92,13 +92,13 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         var specificProjectId = ProjectId.valueOf("87654321-4321-4321-4321-210987654321");
         var specificUserId = UserId.valueOf("specific-user");
         var specificTargetFile = new RelativeFilePath("specific-ontology.ttl");
-        var specificRequest = new CreateProjectHistoryFromGitHubRepoRequest(
+        var specificRequest = new CreateProjectHistoryFromGitHubRepositoryRequest(
                 specificProjectId, repositoryCoordinates, specificTargetFile);
 
         when(executionContext.userId()).thenReturn(specificUserId);
 
         // Act
-        CreateProjectHistoryFromGitHubRepoResponse response =
+        CreateProjectHistoryFromGitHubRepositoryResponse response =
                 commandHandler.handleRequest(specificRequest, executionContext).block();
 
         // Assert - verify response contains the correct data from the request
@@ -116,9 +116,9 @@ class CreateProjectHistoryFromGitHubRepoCommandHandlerTest {
         when(executionContext.userId()).thenReturn(testUserId);
 
         // Act - make two separate requests
-        CreateProjectHistoryFromGitHubRepoResponse response1 =
+        CreateProjectHistoryFromGitHubRepositoryResponse response1 =
                 commandHandler.handleRequest(testRequest, executionContext).block();
-        CreateProjectHistoryFromGitHubRepoResponse response2 =
+        CreateProjectHistoryFromGitHubRepositoryResponse response2 =
                 commandHandler.handleRequest(testRequest, executionContext).block();
 
         // Assert - event IDs should be different
