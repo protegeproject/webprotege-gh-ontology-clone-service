@@ -7,9 +7,6 @@ package edu.stanford.protege.github.cloneservice.event;
  * the possible implementations to only {@link CreateProjectHistoryFromGitHubRepoSucceededEvent}
  * and {@link CreateProjectHistoryFromGitHubRepoFailedEvent}, providing type safety and ensuring
  * that completion events can only represent success or failure outcomes.</p>
- *
- * @see CreateProjectHistoryFromGitHubRepoSucceededEvent
- * @see CreateProjectHistoryFromGitHubRepoFailedEvent
  */
 sealed interface CreateProjectHistoryFromGitHubRepoCompletionEvent extends CreateProjectHistoryFromGitHubRepoEvent
         permits CreateProjectHistoryFromGitHubRepoSucceededEvent, CreateProjectHistoryFromGitHubRepoFailedEvent {}
