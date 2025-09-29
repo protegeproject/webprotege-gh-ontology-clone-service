@@ -88,16 +88,16 @@ jobs:
           echo "version=${{ steps.bump.outputs.new_base_version }}" >> $GITHUB_OUTPUT
           echo "service=webprotege-backend-service" >> $GITHUB_OUTPUT
 
-  notify-bump:
-    needs: build
-    uses: ./.github/workflows/notify-deploy-project.yaml
-    with:
-      version: ${{ needs.build.outputs.version }}
-      service: ${{ needs.build.outputs.service }}
-      branch_var: ${{vars.BUMP_WEBPROTEGE_BRANCH}}
-    secrets:
-      PROTEGE_PROJECT_CLIENT_ID: ${{ secrets.PROTEGE_PROJECT_CLIENT_ID }}
-      PROTEGE_PROJECT_CLIENT_SECRET: ${{ secrets.PROTEGE_PROJECT_CLIENT_SECRET }}
+#  notify-bump:
+#    needs: build
+#    uses: ./.github/workflows/notify-deploy-project.yaml
+#    with:
+#      version: ${{ needs.build.outputs.version }}
+#      service: ${{ needs.build.outputs.service }}
+#      branch_var: ${{vars.BUMP_WEBPROTEGE_BRANCH}}
+#    secrets:
+#      PROTEGE_PROJECT_CLIENT_ID: ${{ secrets.PROTEGE_PROJECT_CLIENT_ID }}
+#      PROTEGE_PROJECT_CLIENT_SECRET: ${{ secrets.PROTEGE_PROJECT_CLIENT_SECRET }}
 
 env:
   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
