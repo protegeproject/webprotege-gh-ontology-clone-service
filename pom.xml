@@ -12,7 +12,7 @@
 
     <groupId>edu.stanford.protege</groupId>
     <artifactId>webprotege-gh-ontology-clone-service</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>webprotege-gh-ontology-clone-service</name>
     <description>This service analyzes a GitHub repository to extract the change history of a target
         ontology file. The history is then transformed into a WebProtégé-compatible revision document
