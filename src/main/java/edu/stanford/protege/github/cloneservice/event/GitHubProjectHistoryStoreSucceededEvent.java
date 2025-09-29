@@ -19,7 +19,7 @@ public record GitHubProjectHistoryStoreSucceededEvent(
         RepositoryCoordinates repositoryCoordinates)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryStoreSucceededEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryStoreSucceeded";
 
     @Override
     public String getChannel() {

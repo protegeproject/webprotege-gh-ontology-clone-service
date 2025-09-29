@@ -21,7 +21,7 @@ public record GitHubProjectHistoryImportSucceededEvent(
         RepositoryCoordinates repositoryCoordinates)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryImportSucceededEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryImportSucceeded";
 
     @Override
     public String getChannel() {

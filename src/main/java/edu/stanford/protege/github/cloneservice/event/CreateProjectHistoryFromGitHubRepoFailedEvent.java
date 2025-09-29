@@ -20,7 +20,7 @@ public record CreateProjectHistoryFromGitHubRepoFailedEvent(
         @JsonProperty("errorMessage") String errorMessage)
         implements CreateProjectHistoryFromGitHubRepoCompletionEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.CreateProjectHistoryFromGitHubRepoFailedEvent";
+    private static final String CHANNEL = "webprotege.events.projects.CreateProjectHistoryFromGitHubRepoFailed";
 
     @Override
     public String getChannel() {

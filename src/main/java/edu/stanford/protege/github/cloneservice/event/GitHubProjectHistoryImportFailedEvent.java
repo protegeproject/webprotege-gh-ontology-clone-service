@@ -23,7 +23,7 @@ public record GitHubProjectHistoryImportFailedEvent(
         String errorMessage)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryImportFailedEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubProjectHistoryImportFailed";
 
     @Override
     public String getChannel() {

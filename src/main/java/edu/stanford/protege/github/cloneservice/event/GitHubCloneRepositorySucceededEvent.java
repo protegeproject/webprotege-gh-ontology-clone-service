@@ -24,7 +24,7 @@ public record GitHubCloneRepositorySucceededEvent(
         GitHubRepository repository)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRepositorySucceededEvent";
+    private static final String CHANNEL = "webprotege.events.projects.GitHubCloneRepositorySucceeded";
 
     @Override
     public String getChannel() {
