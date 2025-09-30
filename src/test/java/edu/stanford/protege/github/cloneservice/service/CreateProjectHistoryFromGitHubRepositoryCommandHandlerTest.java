@@ -3,7 +3,7 @@ package edu.stanford.protege.github.cloneservice.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
 import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest;
 import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryResponse;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
@@ -45,7 +45,7 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
     private ExecutionContext executionContext;
 
     @Mock
-    private RepositoryCoordinates repositoryCoordinates;
+    private BranchCoordinates branchCoordinates;
 
     private ProjectId testProjectId;
     private UserId testUserId;
@@ -63,7 +63,7 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
         testTargetOntologyFile = new RelativeFilePath("ontology.owl");
 
         testRequest = new CreateProjectHistoryFromGitHubRepositoryRequest(
-                testProjectId, repositoryCoordinates, testTargetOntologyFile);
+                testProjectId, branchCoordinates, testTargetOntologyFile);
     }
 
     @Test
@@ -80,7 +80,7 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
         CreateProjectHistoryFromGitHubRepositoryResponse response = result.block();
         assertNotNull(response);
         assertEquals(testProjectId, response.projectId());
-        assertEquals(repositoryCoordinates, response.repositoryCoordinates());
+        assertEquals(branchCoordinates, response.branchCoordinates());
         assertNotNull(response.operationId(), "Event ID should be generated");
 
         // Verify the execution context was accessed
@@ -95,7 +95,7 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
         var specificUserId = UserId.valueOf("specific-user");
         var specificTargetFile = new RelativeFilePath("specific-ontology.ttl");
         var specificRequest = new CreateProjectHistoryFromGitHubRepositoryRequest(
-                specificProjectId, repositoryCoordinates, specificTargetFile);
+                specificProjectId, branchCoordinates, specificTargetFile);
 
         when(executionContext.userId()).thenReturn(specificUserId);
 
@@ -106,7 +106,7 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
         // Assert - verify response contains the correct data from the request
         assertNotNull(response);
         assertEquals(specificProjectId, response.projectId());
-        assertEquals(repositoryCoordinates, response.repositoryCoordinates());
+        assertEquals(branchCoordinates, response.branchCoordinates());
         assertNotNull(response.operationId());
         verify(executionContext).userId();
     }
@@ -131,6 +131,6 @@ class CreateProjectHistoryFromGitHubRepositoryCommandHandlerTest {
 
         // But project and repository data should be the same
         assertEquals(response1.projectId(), response2.projectId());
-        assertEquals(response1.repositoryCoordinates(), response2.repositoryCoordinates());
+        assertEquals(response1.branchCoordinates(), response2.branchCoordinates());
     }
 }

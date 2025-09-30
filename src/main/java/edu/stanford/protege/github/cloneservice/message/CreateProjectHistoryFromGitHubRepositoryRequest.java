@@ -4,7 +4,7 @@ import static edu.stanford.protege.github.cloneservice.message.CreateProjectHist
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.Request;
@@ -12,7 +12,7 @@ import edu.stanford.protege.webprotege.common.Request;
 @JsonTypeName(CHANNEL)
 public record CreateProjectHistoryFromGitHubRepositoryRequest(
         @JsonProperty("projectId") ProjectId projectId,
-        @JsonProperty("repositoryCoordinates") RepositoryCoordinates repositoryCoordinates,
+        @JsonProperty("branchCoordinates") BranchCoordinates branchCoordinates,
         @JsonProperty("rootOntologyPath") RelativeFilePath rootOntologyPath)
         implements Request<CreateProjectHistoryFromGitHubRepositoryResponse> {
 

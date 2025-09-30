@@ -3,10 +3,10 @@ package edu.stanford.protege.github.cloneservice.integration;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.rabbitmq.client.Channel;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
+import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
-import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
@@ -107,11 +107,11 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         logger.info("Starting async MinIO integration test for grocery ontology");
         var userId = UserId.valueOf("async-integration-test-user");
         var projectId = ProjectId.generate();
-        var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+        var branchCoordinates = BranchCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
         var request =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, branchCoordinates, ONTOLOGY_FILE_PATH);
 
         logger.info(
                 "Test configuration - User: {}, Project: {}, Repository: {}, Branch: {}, Target file: {}",
@@ -128,10 +128,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Assert - Verify response structure
         assertNotNull(response, "Response should not be null");
         assertEquals(projectId, response.projectId(), "Should return correct project ID");
-        assertEquals(
-                repositoryCoordinates,
-                response.repositoryCoordinates(),
-                "Should return correct repository coordinates");
+        assertEquals(branchCoordinates, response.branchCoordinates(), "Should return correct repository coordinates");
         assertNotNull(response.operationId(), "Event ID should not be null");
 
         logger.info("Received async response with event ID: {}", response.operationId());
@@ -155,14 +152,14 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         var userId = UserId.valueOf("concurrent-test-user");
         var projectId1 = ProjectId.generate();
         var projectId2 = ProjectId.generate();
-        var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+        var branchCoordinates = BranchCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
 
         var request1 =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId1, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId1, branchCoordinates, ONTOLOGY_FILE_PATH);
         var request2 =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId2, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId2, branchCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act - Start both requests concurrently
         var response1 = commandHandler.handleRequest(request1, executionContext).block();
@@ -192,11 +189,11 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Arrange
         var userId = UserId.valueOf("immediate-return-test-user");
         var projectId = ProjectId.generate();
-        var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+        var branchCoordinates = BranchCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
         var request =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, branchCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act & Assert - Measure response time
         long startTime = System.currentTimeMillis();
@@ -210,10 +207,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
 
         assertNotNull(response, "Response should not be null");
         assertEquals(projectId, response.projectId(), "Should return correct project ID");
-        assertEquals(
-                repositoryCoordinates,
-                response.repositoryCoordinates(),
-                "Should return correct repository coordinates");
+        assertEquals(branchCoordinates, response.branchCoordinates(), "Should return correct repository coordinates");
         assertNotNull(response.operationId(), "Event ID should be provided immediately");
 
         logger.info("Command returned in {}ms with event ID: {}", responseTime, response.operationId());
@@ -227,11 +221,11 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Arrange
         var userId = UserId.valueOf("simple-test-user");
         var projectId = ProjectId.generate();
-        var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+        var branchCoordinates = BranchCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
         var request =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, branchCoordinates, ONTOLOGY_FILE_PATH);
 
         // Act
         var response = commandHandler.handleRequest(request, executionContext).block();
@@ -239,10 +233,7 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Assert - Just verify the response structure, not async processing
         assertNotNull(response, "Response should not be null");
         assertEquals(projectId, response.projectId(), "Should return correct project ID");
-        assertEquals(
-                repositoryCoordinates,
-                response.repositoryCoordinates(),
-                "Should return correct repository coordinates");
+        assertEquals(branchCoordinates, response.branchCoordinates(), "Should return correct repository coordinates");
         assertNotNull(response.operationId(), "Event ID should not be null");
 
         logger.info("Successfully verified command handler integration");
@@ -254,11 +245,11 @@ class GroceryOntologyMinioAsyncIntegrationTest {
         // Arrange
         var userId = UserId.valueOf("reasonable-time-test-user");
         var projectId = ProjectId.generate();
-        var repositoryCoordinates = RepositoryCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
+        var branchCoordinates = BranchCoordinates.createFromUrl(GROCERY_ONTOLOGY_URL, MASTER_BRANCH);
         var executionContext = Mockito.mock(ExecutionContext.class);
         Mockito.when(executionContext.userId()).thenReturn(userId);
         var request =
-                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, repositoryCoordinates, ONTOLOGY_FILE_PATH);
+                new CreateProjectHistoryFromGitHubRepositoryRequest(projectId, branchCoordinates, ONTOLOGY_FILE_PATH);
 
         logger.info("Starting async processing test with reasonable timeout");
 

@@ -1,6 +1,6 @@
 package edu.stanford.protege.github.cloneservice.message;
 
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
 import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectEvent;
@@ -12,14 +12,14 @@ import edu.stanford.protege.webprotege.common.ProjectId;
  * @param projectId The project for which the repository clone failed
  * @param operationId The correlated operation ID for tracking the operation
  * @param eventId The correlation event ID for tracking the operation
- * @param repositoryCoordinates The coordinates of the repository that failed to clone
+ * @param branchCoordinates The coordinates of the repository branch that failed to clone
  * @param errorMessage The error message describing the failure
  */
 public record GitHubCloneRequestFailedEvent(
         ProjectId projectId,
         CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
         EventId eventId,
-        RepositoryCoordinates repositoryCoordinates,
+        BranchCoordinates branchCoordinates,
         String errorMessage)
         implements ProjectEvent {
 

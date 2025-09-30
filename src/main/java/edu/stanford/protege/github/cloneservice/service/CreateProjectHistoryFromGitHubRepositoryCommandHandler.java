@@ -3,9 +3,9 @@ package edu.stanford.protege.github.cloneservice.service;
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
 import edu.stanford.protege.commitnavigator.exceptions.GitHubNavigatorException;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
-import edu.stanford.protege.github.cloneservice.message.*;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
 import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonException;
+import edu.stanford.protege.github.cloneservice.message.*;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 @WebProtegeHandler
 public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
         implements CommandHandler<
-        CreateProjectHistoryFromGitHubRepositoryRequest, CreateProjectHistoryFromGitHubRepositoryResponse> {
+                CreateProjectHistoryFromGitHubRepositoryRequest, CreateProjectHistoryFromGitHubRepositoryResponse> {
 
     private static final Logger logger =
             LoggerFactory.getLogger(CreateProjectHistoryFromGitHubRepositoryCommandHandler.class);
@@ -70,22 +70,23 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
         var userId = executionContext.userId();
 
         var projectId = request.projectId();
-        var repositoryCoordinates = request.repositoryCoordinates();
+        var branchCoordinates = request.branchCoordinates();
         var rootOntologyPath = request.rootOntologyPath();
 
-        startAsyncProcessing(userId, projectId, operationId, repositoryCoordinates, rootOntologyPath);
+        startAsyncProcessing(userId, projectId, operationId, branchCoordinates, rootOntologyPath);
 
-        return Mono.just(new CreateProjectHistoryFromGitHubRepositoryResponse(projectId, operationId, repositoryCoordinates));
+        return Mono.just(
+                new CreateProjectHistoryFromGitHubRepositoryResponse(projectId, operationId, branchCoordinates));
     }
 
     private void startAsyncProcessing(
             UserId userId,
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
-            RepositoryCoordinates repositoryCoordinates,
+            BranchCoordinates branchCoordinates,
             RelativeFilePath rootOntologyPath) {
 
-        cloneRepositoryAsync(userId, projectId, operationId, repositoryCoordinates)
+        cloneRepositoryAsync(userId, projectId, operationId, branchCoordinates)
                 .whenComplete((repository, t) -> {
                     if (t != null) {
                         var eventId = EventId.generate();
@@ -94,9 +95,9 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 projectId,
                                 operationId,
                                 eventId,
-                                repositoryCoordinates.repositoryUrl(),
+                                branchCoordinates.repositoryUrl(),
                                 t);
-                        fireCloneFailed(projectId, operationId, eventId, repositoryCoordinates, t);
+                        fireCloneFailed(projectId, operationId, eventId, branchCoordinates, t);
                     } else {
                         var eventId = EventId.generate();
                         logger.info(
@@ -104,8 +105,8 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 projectId,
                                 operationId,
                                 eventId,
-                                repositoryCoordinates.repositoryUrl());
-                        fireCloneSucceeded(projectId, operationId, eventId, repositoryCoordinates, repository);
+                                branchCoordinates.repositoryUrl());
+                        fireCloneSucceeded(projectId, operationId, eventId, branchCoordinates, repository);
                     }
                 })
                 .thenApplyAsync(
@@ -121,7 +122,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 eventId,
                                 rootOntologyPath,
                                 t);
-                        fireImportFailed(projectId, operationId, eventId, repositoryCoordinates, t);
+                        fireImportFailed(projectId, operationId, eventId, branchCoordinates, t);
                     } else {
                         var eventId = EventId.generate();
                         logger.info(
@@ -130,7 +131,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 operationId,
                                 eventId,
                                 rootOntologyPath);
-                        fireImportSucceeded(projectId, operationId, eventId, repositoryCoordinates);
+                        fireImportSucceeded(projectId, operationId, eventId, branchCoordinates);
                     }
                 })
                 .thenApplyAsync(
@@ -146,7 +147,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 eventId,
                                 documentLocation,
                                 t);
-                        fireStoreFailed(projectId, operationId, eventId, repositoryCoordinates, t);
+                        fireStoreFailed(projectId, operationId, eventId, branchCoordinates, t);
                         fireCreateProjectHistoryFromGitHubRepoFailed(operationId, projectId, t);
                     } else {
                         var eventId = EventId.generate();
@@ -156,7 +157,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 operationId,
                                 eventId,
                                 documentLocation);
-                        fireStoreSucceeded(projectId, operationId, eventId, repositoryCoordinates);
+                        fireStoreSucceeded(projectId, operationId, eventId, branchCoordinates);
                         fireCreateProjectHistoryFromGitHubRepoSucceeded(operationId, projectId, documentLocation);
                     }
                 });
@@ -166,7 +167,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
             UserId userId,
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
-            RepositoryCoordinates repositoryCoordinates) {
+            BranchCoordinates branchCoordinates) {
 
         return CompletableFuture.supplyAsync(
                 () -> {
@@ -175,9 +176,9 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                                 "{} {} Starting repository clone {}",
                                 projectId,
                                 operationId,
-                                repositoryCoordinates.repositoryUrl());
+                                branchCoordinates.repositoryUrl());
                         var workingDirectory = getLocalWorkingDirectory(userId, projectId);
-                        return cloneGitHubRepository(repositoryCoordinates, workingDirectory);
+                        return cloneGitHubRepository(branchCoordinates, workingDirectory);
                     } catch (GitHubNavigatorException e) {
                         throw new RuntimeException("Failed to clone repository", e);
                     }
@@ -192,10 +193,7 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
             GitHubRepository repository) {
         try {
             logger.info(
-                    "{} {} Starting ontology change extraction from file {}",
-                    projectId,
-                    operationId,
-                    rootOntologyPath);
+                    "{} {} Starting ontology change extraction from file {}", projectId, operationId, rootOntologyPath);
             return ontologyHistoryAnalyzer.getCommitHistory(rootOntologyPath, repository);
         } catch (OntologyComparisonException e) {
             throw new RuntimeException("Failed to extract ontology change", e);
@@ -219,9 +217,9 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
         return tempDir.resolve("github-repos" + File.separator + userId.value() + File.separator + projectId.value());
     }
 
-    private GitHubRepository cloneGitHubRepository(RepositoryCoordinates repositoryCoordinates, Path workingDirectory)
+    private GitHubRepository cloneGitHubRepository(BranchCoordinates branchCoordinates, Path workingDirectory)
             throws GitHubNavigatorException {
-        var repository = GitHubRepositoryBuilderFactory.create(repositoryCoordinates)
+        var repository = GitHubRepositoryBuilderFactory.create(branchCoordinates)
                 .localWorkingDirectory(workingDirectory)
                 .build();
         repository.initialize();
@@ -232,58 +230,58 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates,
+            BranchCoordinates branchCoordinates,
             Throwable t) {
         eventDispatcher.dispatchEvent(new GitHubCloneRepositoryFailedEvent(
-                projectId, operationId, eventId, repositoryCoordinates, t.getMessage()));
+                projectId, operationId, eventId, branchCoordinates, t.getMessage()));
     }
 
     private void fireCloneSucceeded(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates,
+            BranchCoordinates branchCoordinates,
             GitHubRepository repository) {
         eventDispatcher.dispatchEvent(new GitHubCloneRepositorySucceededEvent(
-                projectId, operationId, eventId, repositoryCoordinates, repository));
+                projectId, operationId, eventId, branchCoordinates, repository));
     }
 
     private void fireImportFailed(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates,
+            BranchCoordinates branchCoordinates,
             Throwable t) {
         eventDispatcher.dispatchEvent(new GitHubProjectHistoryImportFailedEvent(
-                projectId, operationId, eventId, repositoryCoordinates, t.getMessage()));
+                projectId, operationId, eventId, branchCoordinates, t.getMessage()));
     }
 
     private void fireImportSucceeded(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates) {
+            BranchCoordinates branchCoordinates) {
         eventDispatcher.dispatchEvent(
-                new GitHubProjectHistoryImportSucceededEvent(projectId, operationId, eventId, repositoryCoordinates));
+                new GitHubProjectHistoryImportSucceededEvent(projectId, operationId, eventId, branchCoordinates));
     }
 
     private void fireStoreFailed(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates,
+            BranchCoordinates branchCoordinates,
             Throwable t) {
         eventDispatcher.dispatchEvent(new GitHubProjectHistoryStoreFailedEvent(
-                projectId, operationId, eventId, repositoryCoordinates, t.getMessage()));
+                projectId, operationId, eventId, branchCoordinates, t.getMessage()));
     }
 
     private void fireStoreSucceeded(
             ProjectId projectId,
             CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
             EventId eventId,
-            RepositoryCoordinates repositoryCoordinates) {
+            BranchCoordinates branchCoordinates) {
         eventDispatcher.dispatchEvent(
-                new GitHubProjectHistoryStoreSucceededEvent(projectId, operationId, eventId, repositoryCoordinates));
+                new GitHubProjectHistoryStoreSucceededEvent(projectId, operationId, eventId, branchCoordinates));
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoFailed(

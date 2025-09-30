@@ -8,5 +8,7 @@ package edu.stanford.protege.github.cloneservice.message;
  * and {@link CreateProjectHistoryFromGitHubRepositoryFailedEvent}, providing type safety and ensuring
  * that completion events can only represent success or failure outcomes.</p>
  */
-sealed interface CreateProjectHistoryFromGitHubRepositoryCompletionEvent extends CreateProjectHistoryFromGitHubRepositoryEvent
-        permits CreateProjectHistoryFromGitHubRepositorySucceededEvent, CreateProjectHistoryFromGitHubRepositoryFailedEvent {}
+sealed interface CreateProjectHistoryFromGitHubRepositoryCompletionEvent
+        extends CreateProjectHistoryFromGitHubRepositoryEvent
+        permits CreateProjectHistoryFromGitHubRepositorySucceededEvent,
+                CreateProjectHistoryFromGitHubRepositoryFailedEvent {}

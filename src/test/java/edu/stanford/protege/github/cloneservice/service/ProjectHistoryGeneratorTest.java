@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
-import edu.stanford.protege.commitnavigator.model.RepositoryCoordinates;
+import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
@@ -35,7 +35,7 @@ class ProjectHistoryGeneratorTest {
     private ProjectHistoryStorer projectHistoryStorer;
 
     @Mock
-    private RepositoryCoordinates repositoryCoordinates;
+    private BranchCoordinates branchCoordinates;
 
     @Mock
     private GitHubRepository gitHubRepository;
@@ -82,7 +82,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -90,7 +90,7 @@ class ProjectHistoryGeneratorTest {
 
             // Act
             var result = projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                    testUserId, testProjectId, repositoryCoordinates, rootOntologyPath);
+                    testUserId, testProjectId, branchCoordinates, rootOntologyPath);
 
             // Assert
             assertEquals(testBlobLocation, result);
@@ -116,7 +116,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -126,7 +126,7 @@ class ProjectHistoryGeneratorTest {
             var exception = assertThrows(
                     Exception.class,
                     () -> projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                            testUserId, testProjectId, repositoryCoordinates, rootOntologyPath));
+                            testUserId, testProjectId, branchCoordinates, rootOntologyPath));
 
             assertEquals(expectedException, exception);
             verify(projectHistoryStorer, never()).storeProjectHistory(any(), any());
@@ -152,7 +152,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -162,7 +162,7 @@ class ProjectHistoryGeneratorTest {
             var exception = assertThrows(
                     Exception.class,
                     () -> projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                            testUserId, testProjectId, repositoryCoordinates, rootOntologyPath));
+                            testUserId, testProjectId, branchCoordinates, rootOntologyPath));
 
             assertEquals(expectedException, exception);
         }
@@ -186,7 +186,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -194,7 +194,7 @@ class ProjectHistoryGeneratorTest {
 
             // Act
             projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                    testUserId, testProjectId, repositoryCoordinates, rootOntologyPath);
+                    testUserId, testProjectId, branchCoordinates, rootOntologyPath);
 
             // Assert
             verify(mockBuilder).build();
@@ -219,7 +219,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -227,7 +227,7 @@ class ProjectHistoryGeneratorTest {
 
             // Act
             projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                    testUserId, testProjectId, repositoryCoordinates, rootOntologyPath);
+                    testUserId, testProjectId, branchCoordinates, rootOntologyPath);
 
             // Assert
             var inOrder = inOrder(gitHubRepository, ontologyHistoryAnalyzer);
@@ -254,7 +254,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -262,7 +262,7 @@ class ProjectHistoryGeneratorTest {
 
             // Act
             var result = projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                    testUserId, testProjectId, repositoryCoordinates, rootOntologyPath);
+                    testUserId, testProjectId, branchCoordinates, rootOntologyPath);
 
             // Assert
             assertEquals(testBlobLocation, result);
@@ -288,7 +288,7 @@ class ProjectHistoryGeneratorTest {
             var mockBuilder = mock(edu.stanford.protege.commitnavigator.GitHubRepositoryBuilder.class);
             mockedFactory
                     .when(() -> edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory.create(
-                            repositoryCoordinates))
+                            branchCoordinates))
                     .thenReturn(mockBuilder);
             when(mockBuilder.localWorkingDirectory(any(java.nio.file.Path.class)))
                     .thenReturn(mockBuilder);
@@ -296,7 +296,7 @@ class ProjectHistoryGeneratorTest {
 
             // Act
             projectHistoryGenerator.writeProjectHistoryFromGitHubRepo(
-                    testUserId, testProjectId, repositoryCoordinates, rootOntologyPath);
+                    testUserId, testProjectId, branchCoordinates, rootOntologyPath);
 
             // Assert
             verify(ontologyHistoryAnalyzer).getCommitHistory(rootOntologyPath, gitHubRepository);
