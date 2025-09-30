@@ -17,7 +17,9 @@ This service enables teams to import existing ontology projects from GitHub into
 - **Cloud Storage**: Stores generated revision documents in MinIO-compatible object storage
 - **Message-Driven Architecture**: Processes requests via RabbitMQ for scalable async operations
 
-## Requirements
+## API Usage Guide
+
+This service exposes a message-based API for importing GitHub repositories containing ontology files into WebProtégé. The process is asynchronous and provides real-time status updates through events.
 
 ### Runtime Requirements
 - **Java 17 or higher**: Required for modern language features and Spring Boot 3.x
@@ -25,11 +27,174 @@ This service enables teams to import existing ontology projects from GitHub into
 - **RabbitMQ**: Message broker for request/response handling
 - **MinIO or S3-compatible storage**: For storing generated revision documents
 
+### Quick Start
+
+1. **Send a Request**: Submit a GitHub repository for processing
+2. **Receive Confirmation**: Get an operation ID to track progress
+3. **Monitor Progress**: Listen for status events during processing
+4. **Get Results**: Receive the final document location when complete
+
+### Request and Response
+
+#### Import Request
+To start importing a GitHub repository, send a `CreateProjectHistoryFromGitHubRepositoryRequest`:
+
+```json
+{
+  "projectId": "your-webprotege-project-id",
+  "branchCoordinates": {
+    "repositoryUrl": "https://github.com/owner/repository",
+    "branch": "main"
+  },
+  "rootOntologyPath": "path/to/ontology.owl"
+}
+```
+
+**Parameters:**
+- `projectId`: Your WebProtégé project identifier
+- `repositoryUrl`: The GitHub repository URL containing your ontology
+- `branch`: The git branch to analyze (e.g., "main", "master", "develop")
+- `rootOntologyPath`: Relative path to the main ontology file in the repository
+
+#### Import Response
+You'll immediately receive a `CreateProjectHistoryFromGitHubRepositoryResponse`:
+
+```json
+{
+  "projectId": "your-webprotege-project-id",
+  "operationId": "unique-operation-id",
+  "branchCoordinates": {
+    "repositoryUrl": "https://github.com/owner/repository",
+    "branch": "main"
+  }
+}
+```
+
+**Use the `operationId` to track the progress of your import.**
+
+### Progress Events
+
+The service sends real-time events to keep you informed about the import progress:
+
+#### 🔄 Repository Cloning Events
+
+**Clone Started** (automatically triggered)
+- The service begins downloading your GitHub repository
+
+**Clone Succeeded**
+```json
+{
+  "eventType": "GitHubCloneRepositorySucceeded",
+  "projectId": "your-project-id",
+  "operationId": "your-operation-id",
+  "branchCoordinates": { ... },
+  "repository": "local-repository-reference"
+}
+```
+
+**Clone Failed**
+```json
+{
+  "eventType": "GitHubCloneRepositoryFailed", 
+  "projectId": "your-project-id",
+  "operationId": "your-operation-id",
+  "branchCoordinates": { ... },
+  "errorMessage": "Description of what went wrong"
+}
+```
+
+#### 📊 History Analysis Events
+
+**Import Succeeded**
+```json
+{
+  "eventType": "GitHubProjectHistoryImportSucceeded",
+  "projectId": "your-project-id", 
+  "operationId": "your-operation-id",
+  "branchCoordinates": { ... }
+}
+```
+
+**Import Failed**
+```json
+{
+  "eventType": "GitHubProjectHistoryImportFailed",
+  "projectId": "your-project-id",
+  "operationId": "your-operation-id", 
+  "branchCoordinates": { ... },
+  "errorMessage": "Description of what went wrong"
+}
+```
+
+#### 💾 Storage Events
+
+**Store Succeeded**
+```json
+{
+  "eventType": "GitHubProjectHistoryStoreSucceeded",
+  "projectId": "your-project-id",
+  "operationId": "your-operation-id",
+  "branchCoordinates": { ... }
+}
+```
+
+**Store Failed**
+```json
+{
+  "eventType": "GitHubProjectHistoryStoreFailed",
+  "projectId": "your-project-id", 
+  "operationId": "your-operation-id",
+  "branchCoordinates": { ... },
+  "errorMessage": "Description of what went wrong"
+}
+```
+
+#### ✅ Final Completion Events
+
+**Overall Success**
+```json
+{
+  "eventType": "CreateProjectHistoryFromGitHubRepositorySucceeded",
+  "operationId": "your-operation-id",
+  "projectId": "your-project-id",
+  "documentLocation": {
+    "bucket": "storage-bucket-name",
+    "name": "path/to/generated/document.json"
+  }
+}
+```
+
+**Overall Failure**
+```json
+{
+  "eventType": "CreateProjectHistoryFromGitHubRepositoryFailed",
+  "operationId": "your-operation-id", 
+  "projectId": "your-project-id",
+  "errorMessage": "Description of what went wrong"
+}
+```
+
+### Typical Workflow
+
+1. **Submit Request** → Receive operation ID
+2. **Repository Cloning** → `GitHubCloneRepositorySucceeded` event
+3. **History Analysis** → `GitHubProjectHistoryImportSucceeded` event
+4. **Document Storage** → `GitHubProjectHistoryStoreSucceeded` event
+5. **Completion** → `CreateProjectHistoryFromGitHubRepositorySucceeded` with document location
+
+### Tips for Success
+
+- **File Formats**: Supports `.owl`, `.obo`, `.ofn`, and `.ttl` ontology files
+- **Repository Access**: Ensure the GitHub repository is publicly accessible
+- **File Paths**: Use forward slashes (`/`) in file paths, even on Windows
+- **Branch Names**: Use the exact branch name as it appears in GitHub
+- **Large Repositories**: Processing time increases with repository size and commit history
+
+## Development Commands
+
 ### Build Requirements
 - **Maven 3.6 or higher**: For building and dependency management
 - **Docker** (optional): For building container images
-
-## Development Commands
 
 ### Building and Testing
 ```bash
