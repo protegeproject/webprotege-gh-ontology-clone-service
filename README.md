@@ -37,7 +37,10 @@ This service exposes a message-based API for importing GitHub repositories conta
 ### Request and Response
 
 #### Import Request
-To start importing a GitHub repository, send a `CreateProjectHistoryFromGitHubRepositoryRequest`:
+
+**Channel:** `webprotege.github.CreateProjectHistoryFromGitHubRepo`
+
+Send a `CreateProjectHistoryFromGitHubRepositoryRequest` message to start importing a GitHub repository:
 
 ```json
 {
@@ -57,6 +60,9 @@ To start importing a GitHub repository, send a `CreateProjectHistoryFromGitHubRe
 - `rootOntologyPath`: Relative path to the main ontology file in the repository
 
 #### Import Response
+
+**Channel:** `webprotege.github.CreateProjectHistoryFromGitHubRepo` (response on same channel)
+
 You'll immediately receive a `CreateProjectHistoryFromGitHubRepositoryResponse`:
 
 ```json
@@ -74,7 +80,7 @@ You'll immediately receive a `CreateProjectHistoryFromGitHubRepositoryResponse`:
 
 ### Progress Events
 
-The service sends real-time events to keep you informed about the import progress:
+The service sends real-time events to keep you informed about the import progress. All events are published on channels under `webprotege.events.projects.*`:
 
 #### 🔄 Repository Cloning Events
 
@@ -82,23 +88,28 @@ The service sends real-time events to keep you informed about the import progres
 - The service begins downloading your GitHub repository
 
 **Clone Succeeded**
+
+**Channel:** `webprotege.events.projects.GitHubCloneRepositorySucceeded`
+
 ```json
 {
   "eventType": "GitHubCloneRepositorySucceeded",
   "projectId": "your-project-id",
   "operationId": "your-operation-id",
-  "branchCoordinates": { ... },
+  "branchCoordinates": {},
   "repository": "local-repository-reference"
 }
 ```
 
 **Clone Failed**
+
+**Channel:** `webprotege.events.projects.GitHubCloneRepositoryFailed`
 ```json
 {
-  "eventType": "GitHubCloneRepositoryFailed", 
+  "eventType": "GitHubCloneRepositoryFailed",
   "projectId": "your-project-id",
   "operationId": "your-operation-id",
-  "branchCoordinates": { ... },
+  "branchCoordinates": {},
   "errorMessage": "Description of what went wrong"
 }
 ```
@@ -106,22 +117,27 @@ The service sends real-time events to keep you informed about the import progres
 #### 📊 History Analysis Events
 
 **Import Succeeded**
+
+**Channel:** `webprotege.events.projects.GitHubProjectHistoryImportSucceeded`
+
 ```json
 {
   "eventType": "GitHubProjectHistoryImportSucceeded",
-  "projectId": "your-project-id", 
+  "projectId": "your-project-id",
   "operationId": "your-operation-id",
-  "branchCoordinates": { ... }
+  "branchCoordinates": {}
 }
 ```
 
 **Import Failed**
+
+**Channel:** `webprotege.events.projects.GitHubProjectHistoryImportFailed`
 ```json
 {
   "eventType": "GitHubProjectHistoryImportFailed",
   "projectId": "your-project-id",
-  "operationId": "your-operation-id", 
-  "branchCoordinates": { ... },
+  "operationId": "your-operation-id",
+  "branchCoordinates": {},
   "errorMessage": "Description of what went wrong"
 }
 ```
@@ -129,22 +145,27 @@ The service sends real-time events to keep you informed about the import progres
 #### 💾 Storage Events
 
 **Store Succeeded**
+
+**Channel:** `webprotege.events.projects.GitHubProjectHistoryStoreSucceeded`
+
 ```json
 {
   "eventType": "GitHubProjectHistoryStoreSucceeded",
   "projectId": "your-project-id",
   "operationId": "your-operation-id",
-  "branchCoordinates": { ... }
+  "branchCoordinates": {}
 }
 ```
 
 **Store Failed**
+
+**Channel:** `webprotege.events.projects.GitHubProjectHistoryStoreFailed`
 ```json
 {
   "eventType": "GitHubProjectHistoryStoreFailed",
-  "projectId": "your-project-id", 
+  "projectId": "your-project-id",
   "operationId": "your-operation-id",
-  "branchCoordinates": { ... },
+  "branchCoordinates": {},
   "errorMessage": "Description of what went wrong"
 }
 ```
@@ -152,6 +173,9 @@ The service sends real-time events to keep you informed about the import progres
 #### ✅ Final Completion Events
 
 **Overall Success**
+
+**Channel:** `webprotege.events.projects.CreateProjectHistoryFromGitHubRepoSucceeded`
+
 ```json
 {
   "eventType": "CreateProjectHistoryFromGitHubRepositorySucceeded",
@@ -165,10 +189,12 @@ The service sends real-time events to keep you informed about the import progres
 ```
 
 **Overall Failure**
+
+**Channel:** `webprotege.events.projects.CreateProjectHistoryFromGitHubRepoFailed`
 ```json
 {
   "eventType": "CreateProjectHistoryFromGitHubRepositoryFailed",
-  "operationId": "your-operation-id", 
+  "operationId": "your-operation-id",
   "projectId": "your-project-id",
   "errorMessage": "Description of what went wrong"
 }
