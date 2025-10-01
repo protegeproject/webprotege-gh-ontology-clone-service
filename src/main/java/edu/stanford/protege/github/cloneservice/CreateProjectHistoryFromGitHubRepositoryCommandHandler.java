@@ -110,9 +110,9 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                         fireCloneSucceeded(projectId, operationId, eventId, branchCoordinates, repository);
                     }
                 })
-                .thenApplyAsync(
-                        repository -> extractOntologyChanges(projectId, operationId, rootOntologyPath, repository),
-                        projectHistoryImportExecutor)
+                .thenComposeAsync(repository -> CompletableFuture.supplyAsync(
+                        () -> extractOntologyChanges(projectId, operationId, rootOntologyPath, repository),
+                        projectHistoryImportExecutor))
                 .whenComplete((projectHistory, t) -> {
                     if (t != null) {
                         var eventId = EventId.generate();
@@ -135,9 +135,9 @@ public class CreateProjectHistoryFromGitHubRepositoryCommandHandler
                         fireImportSucceeded(projectId, operationId, eventId, branchCoordinates);
                     }
                 })
-                .thenApplyAsync(
-                        projectHistory -> storeProjectHistory(projectId, operationId, projectHistory),
-                        projectHistoryImportExecutor)
+                .thenComposeAsync(projectHistory -> CompletableFuture.supplyAsync(
+                        () -> storeProjectHistory(projectId, operationId, projectHistory),
+                        projectHistoryImportExecutor))
                 .whenComplete((documentLocation, t) -> {
                     if (t != null) {
                         var eventId = EventId.generate();
