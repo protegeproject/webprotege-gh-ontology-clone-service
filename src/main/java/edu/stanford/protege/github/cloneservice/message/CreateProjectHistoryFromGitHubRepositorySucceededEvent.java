@@ -1,7 +1,6 @@
 package edu.stanford.protege.github.cloneservice.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.BlobLocation;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectId;

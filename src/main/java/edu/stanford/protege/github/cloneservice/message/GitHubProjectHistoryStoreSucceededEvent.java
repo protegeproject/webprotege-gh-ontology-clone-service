@@ -1,7 +1,6 @@
 package edu.stanford.protege.github.cloneservice.message;
 
 import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryOperationId;
 import edu.stanford.protege.webprotege.common.*;
 
 /**

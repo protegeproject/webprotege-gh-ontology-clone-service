@@ -1,4 +1,4 @@
-package edu.stanford.protege.github.cloneservice.service;
+package edu.stanford.protege.github.cloneservice.message;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
