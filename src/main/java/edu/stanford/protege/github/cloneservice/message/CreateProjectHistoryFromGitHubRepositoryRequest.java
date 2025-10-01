@@ -16,7 +16,7 @@ public record CreateProjectHistoryFromGitHubRepositoryRequest(
         @JsonProperty("rootOntologyPath") RelativeFilePath rootOntologyPath)
         implements Request<CreateProjectHistoryFromGitHubRepositoryResponse> {
 
-    public static final String CHANNEL = "webprotege.github.CreateProjectHistoryFromGitHubRepo";
+    public static final String CHANNEL = "webprotege.github.CreateProjectHistory";
 
     @Override
     public String getChannel() {

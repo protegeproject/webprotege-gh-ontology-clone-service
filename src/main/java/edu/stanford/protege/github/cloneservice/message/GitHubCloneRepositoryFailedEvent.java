@@ -22,7 +22,7 @@ public record GitHubCloneRepositoryFailedEvent(
         String errorMessage)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.github.GitHubCloneRepositoryFailed";
+    private static final String CHANNEL = "webprotege.events.github.CloneRepositoryFailed";
 
     @Override
     public String getChannel() {

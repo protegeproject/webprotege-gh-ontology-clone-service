@@ -38,7 +38,7 @@ This service exposes a message-based API for importing GitHub repositories conta
 
 #### Import Request
 
-**Channel:** `webprotege.github.CreateProjectHistoryFromGitHubRepo`
+**Channel:** `webprotege.github.CreateProjectHistory`
 
 Send a `CreateProjectHistoryFromGitHubRepositoryRequest` message to start importing a GitHub repository:
 
@@ -61,7 +61,7 @@ Send a `CreateProjectHistoryFromGitHubRepositoryRequest` message to start import
 
 #### Import Response
 
-**Channel:** `webprotege.github.CreateProjectHistoryFromGitHubRepo` (response on same channel)
+**Channel:** `webprotege.github.CreateProjectHistory` (response on same channel)
 
 You'll immediately receive a `CreateProjectHistoryFromGitHubRepositoryResponse`:
 
@@ -89,7 +89,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Clone Succeeded**
 
-**Channel:** `webprotege.events.github.GitHubCloneRepositorySucceeded`
+**Channel:** `webprotege.events.github.CloneRepositorySucceeded`
 
 ```json
 {
@@ -103,7 +103,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Clone Failed**
 
-**Channel:** `webprotege.events.github.GitHubCloneRepositoryFailed`
+**Channel:** `webprotege.events.github.CloneRepositoryFailed`
 ```json
 {
   "eventType": "GitHubCloneRepositoryFailed",
@@ -118,7 +118,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Import Succeeded**
 
-**Channel:** `webprotege.events.github.GitHubProjectHistoryImportSucceeded`
+**Channel:** `webprotege.events.github.GenerateProjectHistorySucceeded`
 
 ```json
 {
@@ -131,7 +131,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Import Failed**
 
-**Channel:** `webprotege.events.github.GitHubProjectHistoryImportFailed`
+**Channel:** `webprotege.events.github.GenerateProjectHistoryFailed`
 ```json
 {
   "eventType": "GitHubProjectHistoryImportFailed",
@@ -146,7 +146,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Store Succeeded**
 
-**Channel:** `webprotege.events.github.GitHubProjectHistoryStoreSucceeded`
+**Channel:** `webprotege.events.github.StoreProjectHistorySucceeded`
 
 ```json
 {
@@ -159,7 +159,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Store Failed**
 
-**Channel:** `webprotege.events.github.GitHubProjectHistoryStoreFailed`
+**Channel:** `webprotege.events.github.StoreProjectHistoryFailed`
 ```json
 {
   "eventType": "GitHubProjectHistoryStoreFailed",
@@ -174,7 +174,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Overall Success**
 
-**Channel:** `webprotege.events.github.CreateProjectHistoryFromGitHubRepoSucceeded`
+**Channel:** `webprotege.events.github.CreateProjectHistorySucceeded`
 
 ```json
 {
@@ -190,7 +190,7 @@ The service sends real-time events to keep you informed about the import progres
 
 **Overall Failure**
 
-**Channel:** `webprotege.events.github.CreateProjectHistoryFromGitHubRepoFailed`
+**Channel:** `webprotege.events.github.CreateProjectHistoryFailed`
 ```json
 {
   "eventType": "CreateProjectHistoryFromGitHubRepositoryFailed",
