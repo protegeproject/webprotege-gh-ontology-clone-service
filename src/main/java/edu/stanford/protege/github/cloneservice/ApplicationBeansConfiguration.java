@@ -1,6 +1,5 @@
 package edu.stanford.protege.github.cloneservice;
 
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
 import edu.stanford.protege.github.cloneservice.service.ProjectHistoryStorer;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.ipc.EventDispatcher;

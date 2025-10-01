@@ -1,4 +1,4 @@
-package edu.stanford.protege.github.cloneservice.service;
+package edu.stanford.protege.github.cloneservice;
 
 import edu.stanford.protege.commitnavigator.GitHubRepository;
 import edu.stanford.protege.commitnavigator.GitHubRepositoryBuilderFactory;
@@ -8,6 +8,7 @@ import edu.stanford.protege.github.cloneservice.exception.OntologyComparisonExce
 import edu.stanford.protege.github.cloneservice.message.*;
 import edu.stanford.protege.github.cloneservice.model.OntologyCommitChange;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
+import edu.stanford.protege.github.cloneservice.service.ProjectHistoryStorer;
 import edu.stanford.protege.github.cloneservice.utils.OntologyHistoryAnalyzer;
 import edu.stanford.protege.webprotege.common.*;
 import edu.stanford.protege.webprotege.ipc.CommandHandler;

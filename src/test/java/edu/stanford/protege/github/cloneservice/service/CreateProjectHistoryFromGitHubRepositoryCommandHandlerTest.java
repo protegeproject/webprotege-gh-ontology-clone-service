@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
+import edu.stanford.protege.github.cloneservice.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
 import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest;
 import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryResponse;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;

@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.rabbitmq.client.Channel;
 import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
+import edu.stanford.protege.github.cloneservice.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
 import edu.stanford.protege.github.cloneservice.message.CreateProjectHistoryFromGitHubRepositoryRequest;
 import edu.stanford.protege.github.cloneservice.model.RelativeFilePath;
-import edu.stanford.protege.github.cloneservice.service.CreateProjectHistoryFromGitHubRepositoryCommandHandler;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
