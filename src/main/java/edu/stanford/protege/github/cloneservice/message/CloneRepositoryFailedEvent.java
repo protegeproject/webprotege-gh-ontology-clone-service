@@ -14,9 +14,9 @@ import edu.stanford.protege.webprotege.common.ProjectId;
  * @param branchCoordinates The coordinates of the repository branch that failed to clone
  * @param errorMessage The error message describing the failure
  */
-public record GitHubCloneRepositoryFailedEvent(
+public record CloneRepositoryFailedEvent(
         ProjectId projectId,
-        CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
+        CreateProjectHistoryOperationId operationId,
         EventId eventId,
         BranchCoordinates branchCoordinates,
         String errorMessage)

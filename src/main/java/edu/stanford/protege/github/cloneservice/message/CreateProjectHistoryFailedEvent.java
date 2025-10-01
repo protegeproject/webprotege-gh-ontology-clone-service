@@ -12,12 +12,12 @@ import edu.stanford.protege.webprotege.common.ProjectId;
  * @param projectId    The project for which the repository clone failed
  * @param errorMessage The error message describing the failure
  */
-public record CreateProjectHistoryFromGitHubRepositoryFailedEvent(
+public record CreateProjectHistoryFailedEvent(
         @JsonProperty("eventId") EventId eventId,
-        @JsonProperty("operationId") CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
+        @JsonProperty("operationId") CreateProjectHistoryOperationId operationId,
         @JsonProperty("projectId") ProjectId projectId,
         @JsonProperty("errorMessage") String errorMessage)
-        implements CreateProjectHistoryFromGitHubRepositoryCompletionEvent {
+        implements CreateProjectHistoryCompletionEvent {
 
     private static final String CHANNEL = "webprotege.events.github.CreateProjectHistoryFailed";
 

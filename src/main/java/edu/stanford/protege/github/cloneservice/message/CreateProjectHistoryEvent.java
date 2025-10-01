@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 /**
  * Base interface for all events related to creating project history from a GitHub repository.
  */
-public interface CreateProjectHistoryFromGitHubRepositoryEvent extends ProjectEvent {
+public interface CreateProjectHistoryEvent extends ProjectEvent {
 
     /**
      * Returns the unique operation ID associated with this GitHub repository clone operation.
@@ -17,5 +17,5 @@ public interface CreateProjectHistoryFromGitHubRepositoryEvent extends ProjectEv
      * @return the operation ID for this GitHub repository clone operation, never null
      */
     @Nonnull
-    CreateProjectHistoryFromGitHubRepositoryOperationId operationId();
+    CreateProjectHistoryOperationId operationId();
 }

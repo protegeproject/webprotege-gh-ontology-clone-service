@@ -18,22 +18,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ApplicationBeansConfiguration {
 
     @Bean
-    CreateProjectHistoryFromGitHubRepositoryCommandHandler createProjectHistoryFromGitHubRepositoryCommandHandler(
+    CreateProjectHistoryCommandHandler createProjectHistoryFromGitHubRepositoryCommandHandler(
             OntologyHistoryAnalyzer ontologyHistoryAnalyzer,
             ProjectHistoryStorer projectHistoryStorer,
             EventDispatcher eventDispatcher,
-            @Qualifier("projectHistoryImportExecutor") Executor projectHistoryImportExecutor) {
-        return new CreateProjectHistoryFromGitHubRepositoryCommandHandler(
+            @Qualifier("projectHistoryCreationExecutor") Executor projectHistoryImportExecutor) {
+        return new CreateProjectHistoryCommandHandler(
                 ontologyHistoryAnalyzer, projectHistoryStorer, eventDispatcher, projectHistoryImportExecutor);
     }
 
-    @Bean(name = "projectHistoryImportExecutor")
-    Executor projectHistoryImportExecutor() {
+    @Bean(name = "projectHistoryCreationExecutor")
+    Executor projectHistoryCreationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(8);
         executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("project-history-import-");
+        executor.setThreadNamePrefix("project-history-creation-");
         executor.initialize();
         return executor;
     }

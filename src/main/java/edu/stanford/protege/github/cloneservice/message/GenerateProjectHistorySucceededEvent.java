@@ -1,7 +1,9 @@
 package edu.stanford.protege.github.cloneservice.message;
 
 import edu.stanford.protege.commitnavigator.model.BranchCoordinates;
-import edu.stanford.protege.webprotege.common.*;
+import edu.stanford.protege.webprotege.common.EventId;
+import edu.stanford.protege.webprotege.common.ProjectEvent;
+import edu.stanford.protege.webprotege.common.ProjectId;
 
 /**
  * Event dispatched when project history is successfully imported from a GitHub repository.
@@ -11,17 +13,22 @@ import edu.stanford.protege.webprotege.common.*;
  * @param eventId The correlation event ID for tracking the operation
  * @param branchCoordinates The coordinates of the repository branch from which history was imported
  */
-public record GitHubProjectHistoryStoreSucceededEvent(
+public record GenerateProjectHistorySucceededEvent(
         ProjectId projectId,
-        CreateProjectHistoryFromGitHubRepositoryOperationId operationId,
+        CreateProjectHistoryOperationId operationId,
         EventId eventId,
         BranchCoordinates branchCoordinates)
         implements ProjectEvent {
 
-    private static final String CHANNEL = "webprotege.events.github.StoreProjectHistorySucceeded";
+    private static final String CHANNEL = "webprotege.events.github.GenerateProjectHistorySucceeded";
 
     @Override
     public String getChannel() {
         return CHANNEL;
+    }
+
+    @Override
+    public EventId eventId() {
+        return null;
     }
 }
