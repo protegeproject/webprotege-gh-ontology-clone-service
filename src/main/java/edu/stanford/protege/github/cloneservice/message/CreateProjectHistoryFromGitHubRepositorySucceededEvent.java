@@ -20,7 +20,7 @@ public record CreateProjectHistoryFromGitHubRepositorySucceededEvent(
         @JsonProperty("documentLocation") BlobLocation documentLocation)
         implements CreateProjectHistoryFromGitHubRepositoryCompletionEvent {
 
-    private static final String CHANNEL = "webprotege.events.projects.CreateProjectHistoryFromGitHubRepoSucceeded";
+    private static final String CHANNEL = "webprotege.events.github.CreateProjectHistoryFromGitHubRepoSucceeded";
 
     @Override
     public String getChannel() {
