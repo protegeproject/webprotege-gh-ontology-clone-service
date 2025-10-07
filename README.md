@@ -1,10 +1,10 @@
-# WebProtégé GitHub Ontology Clone Service
+# WebProtégé GitHub History Service
 
 A Spring Boot microservice that analyzes GitHub repositories containing ontology files, extracts their change history, and transforms it into WebProtégé-compatible revision documents stored in cloud storage.
 
 ## Overview
 
-The WebProtégé GitHub Ontology Clone Service is a specialized microservice designed to bridge the gap between Git-based ontology development and WebProtégé collaborative editing. It analyzes the evolution of ontology files (OWL, RDF, TTL) within GitHub repositories by tracking axiom-level changes across commit history, then converts this information into WebProtégé's internal revision format for seamless integration.
+The WebProtégé GitHub History Service is a specialized microservice designed to bridge the gap between Git-based ontology development and WebProtégé collaborative editing. It analyzes the evolution of ontology files (OWL, RDF, TTL) within GitHub repositories by tracking axiom-level changes across commit history, then converts this information into WebProtégé's internal revision format for seamless integration.
 
 This service enables teams to import existing ontology projects from GitHub into WebProtégé while preserving the complete development history, making it valuable for collaborative ontology editing, research projects, and ontology maintenance workflows.
 
@@ -267,7 +267,7 @@ mvn spring-boot:run
 mvn clean package
 
 # Manual Docker build
-docker build -f Dockerfile --build-arg JAR_FILE=webprotege-gh-ontology-clone-service-1.0.0.jar -t protegeproject/webprotege-gh-ontology-clone-service:1.0.0 .
+docker build -f Dockerfile --build-arg JAR_FILE=webprotege-gh-history-service-1.0.0.jar -t protegeproject/webprotege-gh-history-service:1.0.0 .
 ```
 
 ### Testing Strategy
