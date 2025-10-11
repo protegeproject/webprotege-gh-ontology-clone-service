@@ -61,13 +61,13 @@ public class OntologyHistoryAnalyzer {
             var workingDirectory = gitHubRepository.getWorkingDirectory();
 
             // Configure commit navigator to focus on the target ontology file
-            var targetOntologyFile = ontologyFilePath.asString();
+            var rootOntologyPath = ontologyFilePath.asString();
             var commitNavigator = CommitNavigatorBuilder.forWorkingDirectory(workingDirectory)
                     .fileFilters("*.owl", "*.obo", "*.ofn", "*.ttl")
                     .build();
 
             // Resolve the absolute path to the ontology file in the local clone
-            var ontologyFile = commitNavigator.resolveFilePath(targetOntologyFile);
+            var ontologyFile = commitNavigator.resolveFilePath(rootOntologyPath);
 
             // Get the current commit metadata
             var childCommitMetadata = commitNavigator.getCurrentCommit();
