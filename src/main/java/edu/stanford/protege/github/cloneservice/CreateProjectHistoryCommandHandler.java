@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.NestedExceptionUtils;
 import reactor.core.publisher.Mono;
 
 @WebProtegeHandler
@@ -121,6 +122,7 @@ public class CreateProjectHistoryCommandHandler
                         fireStoreSucceeded(projectId, operationId, branchCoordinates);
                         fireCreateProjectHistoryFromGitHubRepoSucceeded(operationId, projectId, documentLocation);
                     } else {
+                        logger.info("{} {} Failed to create project history {}", operationId, projectId, t.getMessage());
                         // Terminal overarching error
                         fireCreateProjectHistoryFromGitHubRepoFailed(operationId, projectId, t);
                     }
@@ -143,7 +145,7 @@ public class CreateProjectHistoryCommandHandler
                                 branchCoordinates.repositoryUrl());
                         var workingDirectory = getLocalWorkingDirectory(userId, projectId);
                         return cloneGitHubRepository(branchCoordinates, workingDirectory);
-                    } catch (GitHubNavigatorException e) {
+                    } catch (Exception e) {
                         logger.error(
                                 "{} {} Failed to clone GitHub repository {}",
                                 projectId,
@@ -225,8 +227,9 @@ public class CreateProjectHistoryCommandHandler
             EventId eventId,
             BranchCoordinates branchCoordinates,
             Throwable t) {
+        var mostSpecificCause = NestedExceptionUtils.getMostSpecificCause(t);
         eventDispatcher.dispatchEvent(
-                new CloneRepositoryFailedEvent(projectId, operationId, eventId, branchCoordinates, t.getMessage()));
+                new CloneRepositoryFailedEvent(projectId, operationId, eventId, branchCoordinates, mostSpecificCause.getMessage()));
     }
 
     private void fireCloneSucceeded(
@@ -245,8 +248,9 @@ public class CreateProjectHistoryCommandHandler
             EventId eventId,
             BranchCoordinates branchCoordinates,
             Throwable t) {
+        var mostSpecificCause = NestedExceptionUtils.getMostSpecificCause(t);
         eventDispatcher.dispatchEvent(new GenerateProjectHistoryFailedEvent(
-                projectId, operationId, eventId, branchCoordinates, t.getMessage()));
+                projectId, operationId, eventId, branchCoordinates, mostSpecificCause.getMessage()));
     }
 
     private void fireGenerateSucceeded(
@@ -260,8 +264,9 @@ public class CreateProjectHistoryCommandHandler
             CreateProjectHistoryOperationId operationId,
             BranchCoordinates branchCoordinates,
             Throwable t) {
+        var mostSpecificCause = NestedExceptionUtils.getMostSpecificCause(t);
         eventDispatcher.dispatchEvent(new StoreProjectHistoryFailedEvent(
-                projectId, operationId, EventId.generate(), branchCoordinates, t.getMessage()));
+                projectId, operationId, EventId.generate(), branchCoordinates, mostSpecificCause.getMessage()));
     }
 
     private void fireStoreSucceeded(
@@ -272,8 +277,10 @@ public class CreateProjectHistoryCommandHandler
 
     private void fireCreateProjectHistoryFromGitHubRepoFailed(
             CreateProjectHistoryOperationId operationId, ProjectId projectId, Throwable t) {
+        logger.info("{} {} Firing CreateProjectHistoryFailedEvent: {}", projectId, operationId, t.getMessage());
+        var mostSpecificCause = NestedExceptionUtils.getMostSpecificCause(t);
         eventDispatcher.dispatchEvent(
-                new CreateProjectHistoryFailedEvent(EventId.generate(), operationId, projectId, t.getMessage()));
+                new CreateProjectHistoryFailedEvent(EventId.generate(), operationId, projectId, mostSpecificCause.getMessage()));
     }
 
     private void fireCreateProjectHistoryFromGitHubRepoSucceeded(
